@@ -1,23 +1,44 @@
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import fs from 'fs';
+import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({mode}) => {
+const htmlInjectPlugin = () => {
+  return {
+    name: 'html-inject',
+    transformIndexHtml(html: string) {
+      let result = html;
+      const views = [
+        'view-landing', 'view-login', 'view-register', 'view-dashboard', 
+        'view-profile', 'view-create-cv', 'view-design-resume', 
+        'view-build-portfolio', 'view-cv-result', 'view-resume-result', 
+        'view-portfolio-result', 'view-pricing', 'view-preview-gallery'
+      ];
+      views.forEach(view => {
+        const viewPath = path.resolve(__dirname, 'src/views', `${view}.html`);
+        if (fs.existsSync(viewPath)) {
+          const content = fs.readFileSync(viewPath, 'utf-8');
+          result = result.replace(`<!-- INJECT_VIEW_${view} -->`, content);
+        }
+      });
+      return result;
+    }
+  }
+}
+
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [tailwindcss(), htmlInjectPlugin()],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(__dirname, './src'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
