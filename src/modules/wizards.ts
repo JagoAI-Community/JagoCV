@@ -1,29 +1,44 @@
 import { hideAllViews, showView, getEl } from '../utils/dom';
+import { generateAiCompletion, AiMessage } from '../services/ai';
 
 /**
  * Handles creation wizards (CV, Resume, Portfolio) and generation mock
  */
 export function initWizards(): void {
-  // --- Generation Logic (Mock) ---
-  const bindGenerate = (btnId: string, resultViewId: string, loadingText: string, timeoutMs: number) => {
+  // --- Generation Logic (AI Integration) ---
+  const bindGenerate = (btnId: string, resultViewId: string, loadingText: string, promptType: string) => {
     const btn = getEl(btnId);
     const viewResult = getEl(resultViewId);
     if (btn && viewResult) {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const originalText = btn.innerHTML;
         btn.innerHTML = `<svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> ${loadingText}...`;
-        setTimeout(() => {
-          hideAllViews();
-          showView(viewResult);
-          btn.innerHTML = originalText;
-        }, timeoutMs);
+        btn.setAttribute('disabled', 'true');
+        
+        try {
+           const messages: AiMessage[] = [
+             { role: 'system', content: 'Anda adalah asisten karir jagoCV profesional.' },
+             { role: 'user', content: `Buatkan draft untuk ${promptType} saya secara profesional.` }
+           ];
+           // Panggil API (opsional: tampilkan hasil di view, saat ini hanya redirect)
+           const result = await generateAiCompletion(messages);
+           console.log("AI Result:", result);
+           
+           hideAllViews();
+           showView(viewResult);
+        } catch (error) {
+           alert("Gagal terhubung ke AI. Pastikan server backend berjalan.");
+        } finally {
+           btn.removeAttribute('disabled');
+           btn.innerHTML = originalText;
+        }
       });
     }
   };
 
-  bindGenerate("btn-generate-cv", "view-cv-result", "Membuat", 1000);
-  bindGenerate("btn-generate-resume", "view-resume-result", "Menyusun Desain", 1200);
-  bindGenerate("btn-generate-portfolio", "view-portfolio-result", "Mempublikasikan", 1500);
+  bindGenerate("btn-generate-cv", "view-cv-result", "Membuat CV ATS", "CV ATS");
+  bindGenerate("btn-generate-resume", "view-resume-result", "Menyusun Visual Resume", "Resume Visual");
+  bindGenerate("btn-generate-portfolio", "view-portfolio-result", "Mempublikasikan Portfolio", "Web Portfolio");
 
   // --- Input Mode Toggles (Manual vs AI) ---
   const setupToggle = (manualId: string, aiId: string, manualContainerId: string, aiContainerId: string, activeColorClass: string, shadowColorClass: string) => {

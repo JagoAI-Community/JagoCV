@@ -4,7 +4,7 @@ import { showToast } from '../utils/toast';
 /**
  * Handles dashboard data population and filtering
  */
-export function initDashboard(data: UserDashboardData): void {
+export async function initDashboard(data: UserDashboardData): Promise<void> {
   // Populate Nav & Profile headers
   const populateText = (id: string, text: string) => {
     const el = document.getElementById(id);
@@ -25,6 +25,22 @@ export function initDashboard(data: UserDashboardData): void {
   populateImg("profile-page-img", data.profileImageUrl);
   populateText("lbl-portfolio-views", data.portfolioViews.toString());
 
+  // Fetch data from Backend
+  let backendDocs: any[] = [];
+  let backendTemplates: any[] = [];
+
+  try {
+     const [docsRes, tplRes] = await Promise.all([
+        fetch('/api/documents'),
+        fetch('/api/templates')
+     ]);
+     if (docsRes.ok) backendDocs = await docsRes.json();
+     if (tplRes.ok) backendTemplates = await tplRes.json();
+  } catch (err) {
+     console.warn("Backend not available, falling back to mock data", err);
+     backendDocs = data.recentDocs;
+  }
+
   // Render recent documents list & grid
   const grid = document.getElementById("recent-docs-grid");
   const listBody = document.getElementById("recent-docs-list");
@@ -32,6 +48,35 @@ export function initDashboard(data: UserDashboardData): void {
   function renderDocs(filter: string) {
     if (!grid || !listBody) return;
     
+    // --- Render Generator Cards (Templates) dynamically ---
+    const templatesContainer = document.getElementById("template-grid-container");
+    if (templatesContainer && backendTemplates.length > 0) {
+       templatesContainer.innerHTML = '';
+       backendTemplates.forEach(tpl => {
+          const article = document.createElement("article");
+          const hoverBorder = tpl.theme_color === 'blue' ? 'hover:border-blue-500/50 dark:hover:border-blue-500/50' : 
+                              tpl.theme_color === 'indigo' ? 'hover:border-indigo-500/50 dark:hover:border-indigo-500/50' : 
+                              'hover:border-cyan-500/50 dark:hover:border-cyan-500/50';
+          article.className = `bg-white/5 dark:bg-[#0a0f1c]/40 rounded-3xl p-7 flex flex-col group cursor-pointer relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-300 hover:-translate-y-1 ${hoverBorder}`;
+          article.innerHTML = `
+            <div class="absolute -top-16 -left-16 w-48 h-48 bg-${tpl.theme_color}-500/20 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            
+            <div class="w-14 h-14 bg-${tpl.theme_color}-500/5 dark:bg-${tpl.theme_color}-500/10 rounded-2xl flex items-center justify-center border border-${tpl.theme_color}-200/50 dark:border-${tpl.theme_color}-500/30 mb-6 text-${tpl.theme_color}-600 dark:text-${tpl.theme_color}-400 relative z-10">
+              ${tpl.icon_svg}
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">${tpl.name}</h3>
+            <p class="text-[15px] text-slate-600 dark:text-slate-400 mb-8 flex-1 leading-relaxed relative z-10">${tpl.description}</p>
+            <div class="flex items-center gap-3 mt-auto relative z-10 w-full">
+              <button class="w-[46px] h-[46px] flex items-center justify-center bg-transparent hover:bg-slate-800/80 rounded-xl text-slate-400 hover:text-slate-300 transition-colors border border-slate-200/10 dark:border-slate-700/50" title="Pratinjau">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              </button>
+              <button class="flex-1 bg-${tpl.theme_color === 'blue' ? '[#1E5EFF] hover:bg-blue-600' : tpl.theme_color+'-600 hover:bg-'+tpl.theme_color+'-700'} text-white font-bold py-3 rounded-xl transition-all text-sm">Buat ${tpl.type}</button>
+            </div>
+          `;
+          templatesContainer.appendChild(article);
+       });
+    }
+
     // Render Grid Create Card
     grid.innerHTML = `
       <div class="group relative bg-[#F8FAFC]/80 dark:bg-[#0a0f1c]/50 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 rounded-2xl overflow-hidden aspect-[3/4] flex flex-col items-center justify-center cursor-pointer transition-all hover:bg-blue-50/50 dark:hover:bg-blue-900/10" onclick="window.showToast('Membuat dokumen kosong baru...')">
@@ -43,7 +88,7 @@ export function initDashboard(data: UserDashboardData): void {
     `;
     listBody.innerHTML = "";
 
-    const filteredDocs = filter === "Semua" ? data.recentDocs : data.recentDocs.filter(d => {
+    const filteredDocs = filter === "Semua" ? backendDocs : backendDocs.filter(d => {
        if (filter === "CV ATS") return d.type === "ATS CV";
        if (filter === "Resume" || filter === "Visual Resume") return d.type === "Visual Resume";
        if (filter === "Web Portfolio") return d.type === "Web Portfolio";

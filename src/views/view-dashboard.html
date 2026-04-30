@@ -10,60 +10,8 @@
         <p class="text-slate-500 dark:text-slate-400 text-base md:text-lg leading-relaxed">Pilih format dokumen di bawah untuk mulai membuat. Masukkan detail Anda sekali, dan biarkan sistem menghasilkan materi berformat sempurna untuk lamaran Anda.</p>
       </header>
       
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- 1. ATS CV Template Card -->
-        <article class="bg-white/5 dark:bg-[#0a0f1c]/40 rounded-3xl p-7 flex flex-col group cursor-pointer relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50 dark:hover:border-blue-500/50">
-          <!-- Hover Glow -->
-          <div class="absolute -top-16 -left-16 w-48 h-48 bg-blue-500/20 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-          
-          <div class="w-14 h-14 bg-blue-500/5 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-200/50 dark:border-blue-500/30 mb-6 text-blue-600 dark:text-blue-500 relative z-10">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">CV Optimal ATS</h3>
-          <p class="text-[15px] text-slate-600 dark:text-slate-400 mb-8 flex-1 leading-relaxed relative z-10">Dokumen berbasis teks yang semantik dan bersih, dirancang khusus untuk melewati Sistem Pelacakan Pelamar (ATS) di perusahaan teknologi top.</p>
-          <div class="flex items-center gap-3 mt-auto relative z-10 w-full">
-            <button id="btn-preview-dash-cv" class="w-[46px] h-[46px] flex items-center justify-center bg-transparent hover:bg-slate-800/80 rounded-xl text-slate-400 hover:text-slate-300 transition-colors border border-slate-200/10 dark:border-slate-700/50" title="Pratinjau">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-            </button>
-            <button id="btn-create-cv" class="flex-1 bg-[#1E5EFF] hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all text-sm">Buat CV ATS</button>
-          </div>
-        </article>
-
-        <!-- 2. Visual Resume Template Card -->
-        <article class="bg-white/5 dark:bg-[#0a0f1c]/40 rounded-3xl p-7 flex flex-col group cursor-pointer relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/50 dark:hover:border-indigo-500/50">
-          <div class="absolute -top-16 -left-16 w-48 h-48 bg-indigo-500/20 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-          
-          <div class="w-14 h-14 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-2xl flex items-center justify-center border border-indigo-200/50 dark:border-indigo-500/30 mb-6 text-indigo-600 dark:text-indigo-400 relative z-10">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Resume Visual Modern</h3>
-          <p class="text-[15px] text-slate-600 dark:text-slate-400 mb-8 flex-1 leading-relaxed relative z-10">Resume PDF yang diformat indah dengan tata letak modern, tipografi, dan hierarki visual yang jelas untuk perekrut.</p>
-          <div class="flex items-center gap-3 mt-auto relative z-10 w-full">
-            <button id="btn-preview-dash-resume" class="w-[46px] h-[46px] flex items-center justify-center bg-transparent hover:bg-slate-800/80 rounded-xl text-slate-400 hover:text-slate-300 transition-colors border border-slate-200/10 dark:border-slate-700/50" title="Pratinjau">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-            </button>
-            <button id="btn-design-resume" class="flex-1 bg-[#1E5EFF] hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all text-sm">Desain Resume</button>
-          </div>
-        </article>
-
-        <!-- 3. Web Portfolio Card (The Linktree we just made) -->
-        <article class="bg-white/5 dark:bg-[#0a0f1c]/40 rounded-3xl p-7 flex flex-col group cursor-pointer relative overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 dark:hover:border-cyan-500/50">
-          <div class="absolute -top-16 -left-16 w-48 h-48 bg-cyan-500/20 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-          
-          <div class="w-14 h-14 bg-cyan-500/5 dark:bg-cyan-500/10 rounded-2xl flex items-center justify-center border border-cyan-200/50 dark:border-cyan-500/30 mb-6 text-cyan-600 dark:text-cyan-400 relative z-10">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-          </div>
-          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3 relative z-10">Portofolio Interaktif</h3>
-          <p class="text-[15px] text-slate-600 dark:text-slate-400 mb-8 flex-1 leading-relaxed relative z-10">Dasbor web Bento-grid interaktif yang ramah seluler untuk memamerkan proyek dan bio Anda secara online.</p>
-          <div class="flex items-center gap-3 mt-auto relative z-10 w-full">
-            <button id="btn-preview-dash-portfolio" class="w-[46px] h-[46px] flex items-center justify-center bg-transparent hover:bg-slate-800/80 rounded-xl text-slate-400 hover:text-slate-300 transition-colors border border-slate-200/10 dark:border-slate-700/50" title="Pratinjau">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-            </button>
-            <button id="btn-build-portfolio" class="flex-1 bg-[#1E5EFF] hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all text-sm">Buat Portofolio</button>
-          </div>
-        </article>
-
+      <section id="template-grid-container" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <!-- Generator cards will be dynamically injected here by dashboard.ts -->
       </section>
 
       <!-- Recent Dokumens List -->

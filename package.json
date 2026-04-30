@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:client": "vite --port=3000 --host=0.0.0.0",
+    "dev:server": "node server/index.js",
+    "dev": "npm run dev:server & npm run dev:client",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
@@ -13,6 +15,11 @@
   "dependencies": {
     "@google/genai": "^1.29.0",
     "@tailwindcss/vite": "^4.1.14",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.3",
+    "node-fetch": "^3.3.2",
     "vite": "^6.2.0"
   },
   "devDependencies": {

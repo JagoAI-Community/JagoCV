@@ -1,3 +1,5 @@
+import { generateAiCompletion, AiMessage } from '../services/ai';
+
 /**
  * Document-Level AI Chat Logic
  */
@@ -11,7 +13,14 @@ export function initAiChat(): void {
 
     if (!input || !sendBtn || !messagesContainer) return;
 
+    // Chat history
+    const chatHistory: AiMessage[] = [
+      { role: 'system', content: 'Anda adalah asisten karir cerdas untuk platform jagoCV. Jawablah permintaan pengguna mengenai pembuatan CV/Resume dengan profesional.' }
+    ];
+
     const addUserMessage = (text: string) => {
+      chatHistory.push({ role: 'user', content: text });
+      
       const msgDiv = document.createElement('div');
       msgDiv.className = 'flex items-start gap-4 justify-end mt-4 animate-[fadeIn_0.3s_ease_forwards]';
       
@@ -28,7 +37,7 @@ export function initAiChat(): void {
       messagesContainer.appendChild(msgDiv);
     };
 
-    const addAiResponse = () => {
+    const addAiResponse = async () => {
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'flex items-start gap-4 mt-4 animate-[fadeIn_0.3s_ease_forwards]';
       
@@ -48,7 +57,10 @@ export function initAiChat(): void {
       `;
       messagesContainer.appendChild(loadingDiv);
 
-      setTimeout(() => {
+      try {
+        const reply = await generateAiCompletion(chatHistory);
+        chatHistory.push({ role: 'assistant', content: reply });
+        
         loadingDiv.remove();
         
         const responseDiv = document.createElement('div');
@@ -57,13 +69,24 @@ export function initAiChat(): void {
            <div class="w-8 h-8 rounded-full ${themeColorClass} flex items-center justify-center shrink-0">
              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
            </div>
-           <div class="${bubbleClass} border p-4 rounded-2xl rounded-tl-none text-sm text-emerald-400 font-semibold shadow-sm leading-relaxed max-w-2xl flex items-center gap-2">
-             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-             Process Complete! I've updated the entire document for you.
+           <div class="${bubbleClass} border p-4 rounded-2xl rounded-tl-none text-sm font-medium shadow-sm leading-relaxed max-w-2xl text-slate-900 dark:text-slate-100">
+             ${reply.replace(/\n/g, '<br/>')}
            </div>
         `;
         messagesContainer.appendChild(responseDiv);
-      }, 1500);
+      } catch (err) {
+        loadingDiv.remove();
+        console.error(err);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'flex items-start gap-4 mt-4 animate-[fadeIn_0.3s_ease_forwards]';
+        errorDiv.innerHTML = `
+           <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0">!</div>
+           <div class="bg-red-950/50 border-red-500/20 border p-4 rounded-2xl rounded-tl-none text-sm text-red-400 font-semibold shadow-sm leading-relaxed max-w-2xl">
+             Koneksi ke AI gagal. (XAMPP Server / API Key mungkin belum siap).
+           </div>
+        `;
+        messagesContainer.appendChild(errorDiv);
+      }
     };
 
     const handleSend = () => {
