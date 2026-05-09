@@ -1,47 +1,59 @@
 import { api } from '../lib/api';
-import { UserDashboardData } from '../lib/types';
+import { UserDashboardData, DocType, DocStatus, DOC_TYPE_LABELS, DOC_STATUS_LABELS, SUBSCRIPTION_LABELS } from '../lib/types';
 
 // Avatar default jika user belum upload foto
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%231E3A5F'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%2364B5F6'/%3E%3Cellipse cx='50' cy='90' rx='30' ry='22' fill='%2364B5F6'/%3E%3C/svg%3E";
+
+// Format tanggal ISO menjadi string lokal Indonesia: "12 Mei 2026"
+function formatDate(isoString: string): string {
+  if (!isoString) return '-';
+  try {
+    return new Date(isoString).toLocaleDateString('id-ID', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  } catch {
+    return '-';
+  }
+}
 
 // Data dashboard disimpan di module level agar bisa diakses fungsi lain
 let cachedDashboardData: UserDashboardData | null = null;
 
 // ===================================================================
 // FUNGSI UTAMA: Populate Halaman Profil dari data localStorage + cache
-// Dipanggil setiap kali navigasi ke halaman Profil
 // ===================================================================
 export function populateProfilePage() {
   const userRaw = localStorage.getItem('user');
   if (!userRaw) return;
-  
+
   const user = JSON.parse(userRaw);
 
-  // --- Elemen di halaman Profil ---
   const pfName     = document.getElementById("profile-page-name");
   const pfRole     = document.getElementById("profile-page-role");
   const pfImg      = document.getElementById("profile-page-img") as HTMLImageElement;
   const pfEmail    = document.getElementById("pf-email");
   const pfLocation = document.getElementById("pf-location");
   const pfSubs     = document.getElementById("pf-subs-tier");
+  const pfCredits  = document.getElementById("pf-ai-credits");
   const pfCvCount  = document.getElementById("pf-cv-count");
   const pfPortCount= document.getElementById("pf-portfolio-count");
 
-  if (pfName)     pfName.textContent     = user.name || "Pengguna";
-  if (pfRole)     pfRole.textContent     = user.role || "Member JagoCV";
-  if (pfEmail)    pfEmail.textContent    = user.email || "-";
-  if (pfLocation) pfLocation.textContent = user.location || "-";
-  if (pfSubs)     pfSubs.textContent     = user.subscriptionTier || "Biasa";
-  
+  if (pfName)    pfName.textContent    = user.name || "Pengguna";
+  if (pfRole)    pfRole.textContent    = user.role === "ADMIN" ? "Administrator" : "Member JagoCV";
+  if (pfEmail)   pfEmail.textContent   = user.email || "-";
+  if (pfLocation)pfLocation.textContent= user.location || "-";
+  if (pfSubs)    pfSubs.textContent    = SUBSCRIPTION_LABELS[user.subscriptionTier as keyof typeof SUBSCRIPTION_LABELS] || "Biasa";
+  if (pfCredits) pfCredits.textContent = `${user.aiCredits ?? 0} Kredit`;
+
   if (pfImg) {
     pfImg.src = user.profileImageUrl || DEFAULT_AVATAR;
     pfImg.onerror = () => { pfImg.src = DEFAULT_AVATAR; };
   }
 
-  // Hitung dokumen dari cache (jika sudah pernah load)
+  // Hitung dokumen dari cache
   if (cachedDashboardData) {
-    const cvCount   = cachedDashboardData.recentDocs.filter(d => d.type === 'ATS CV' || d.type === 'Visual Resume').length;
-    const portCount = cachedDashboardData.recentDocs.filter(d => d.type === 'Web Portfolio').length;
+    const cvCount   = cachedDashboardData.recentDocs.filter(d => d.type === 'ATS_CV' || d.type === 'VISUAL_RESUME').length;
+    const portCount = cachedDashboardData.recentDocs.filter(d => d.type === 'WEB_PORTFOLIO').length;
     if (pfCvCount)   pfCvCount.textContent   = cvCount.toString();
     if (pfPortCount) pfPortCount.textContent = portCount.toString();
   }
@@ -69,25 +81,26 @@ export function initDashboard() {
 
       const dashboardData: UserDashboardData = {
         name: user.name || "Pengguna",
-        role: user.role || "Member JagoCV",
+        role: user.role || "USER",
         profileImageUrl: user.profileImageUrl || DEFAULT_AVATAR,
+        subscriptionTier: user.subscriptionTier || "BIASA",
+        aiCredits: user.aiCredits ?? 0,
         portfolioViews: user.portfolioViews || 0,
         recentDocs: documents.map((doc: any) => ({
           id: doc.id,
           title: doc.title,
-          type: doc.type,
-          status: doc.status,
-          date: doc.date,
+          type: doc.type as DocType,
+          status: doc.status as DocStatus,
+          createdAt: doc.createdAt,
           templateId: doc.templateId || 'standard',
           fontFamily: doc.fontFamily || 'Inter',
           themeColor: doc.themeColor || 'blue',
+          deletedAt: doc.deletedAt || null,
         }))
       };
 
       cachedDashboardData = dashboardData;
       populateDashboard(dashboardData);
-
-      // Setelah data dimuat, update profil jika halaman profil sedang aktif
       populateProfilePage();
 
     } catch (err) {
@@ -95,17 +108,15 @@ export function initDashboard() {
     }
   }
 
-  // Muat data saat event auth-success (login berhasil) 
   document.addEventListener('auth-success', refreshDashboardData);
 
-  // Muat data jika sudah ada session aktif
   if (localStorage.getItem('token')) {
     refreshDashboardData();
   }
 }
 
 // ===================================================================
-// POPULASI UI DASHBOARD (navbar + grid dokumen)
+// POPULASI UI DASHBOARD
 // ===================================================================
 function populateDashboard(data: UserDashboardData) {
   // --- Navbar ---
@@ -114,14 +125,16 @@ function populateDashboard(data: UserDashboardData) {
   const elImg  = document.getElementById("nav-profile-img") as HTMLImageElement;
 
   if (elName) elName.textContent = data.name;
-  if (elRole) elRole.textContent = data.role;
+  if (elRole) elRole.textContent = SUBSCRIPTION_LABELS[data.subscriptionTier] || "Member JagoCV";
   if (elImg) {
     elImg.src = data.profileImageUrl;
     elImg.onerror = () => { elImg.src = DEFAULT_AVATAR; };
   }
 
-  const viewsEl = document.getElementById("lbl-portfolio-views");
-  if (viewsEl) viewsEl.textContent = data.portfolioViews.toString();
+  const viewsEl   = document.getElementById("lbl-portfolio-views");
+  const creditsEl = document.getElementById("lbl-ai-credits");
+  if (viewsEl)   viewsEl.textContent   = data.portfolioViews.toString();
+  if (creditsEl) creditsEl.textContent = data.aiCredits.toString();
 
   // --- Grid & List Dokumen ---
   const grid     = document.getElementById("recent-docs-grid");
@@ -153,10 +166,9 @@ function populateDashboard(data: UserDashboardData) {
   }
 
   data.recentDocs.forEach(doc => {
-    let typeLabel = "Dokumen";
-    if (doc.type === "ATS CV") typeLabel = "ATS CV";
-    if (doc.type === "Visual Resume") typeLabel = "Resume";
-    if (doc.type === "Web Portfolio") typeLabel = "Web Portfolio";
+    const typeLabel   = DOC_TYPE_LABELS[doc.type] || "Dokumen";
+    const statusLabel = DOC_STATUS_LABELS[doc.status] || doc.status;
+    const dateFormatted = formatDate(doc.createdAt);
 
     const div = document.createElement("div");
     div.className = "group relative bg-white dark:bg-[#0B1221]/80 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden aspect-[3/4] flex flex-col";
@@ -166,17 +178,12 @@ function populateDashboard(data: UserDashboardData) {
     div.innerHTML = `
       <div class="flex-1 bg-slate-50 dark:bg-[#070B19] p-4 relative overflow-hidden group-hover:bg-slate-100 dark:group-hover:bg-slate-800/30 transition-colors">
         <div class="w-full h-full bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 rounded px-3 py-4 flex flex-col gap-2 opacity-80 pointer-events-none">
-           ${doc.type === 'Web Portfolio' ? '<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 mb-2"></div>' : ''}
-           <div class="w-1/2 h-2 ${doc.type === 'Web Portfolio' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-slate-300 dark:bg-slate-600'} rounded-full ${doc.type !== 'Web Portfolio' ? 'mx-auto' : ''}"></div>
-           ${doc.type !== 'Web Portfolio' ? '<div class="w-1/3 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-2"></div>' : ''}
+           ${doc.type === 'WEB_PORTFOLIO' ? '<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 mb-2"></div>' : ''}
+           <div class="w-1/2 h-2 ${doc.type === 'WEB_PORTFOLIO' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-slate-300 dark:bg-slate-600'} rounded-full ${doc.type !== 'WEB_PORTFOLIO' ? 'mx-auto' : ''}"></div>
+           ${doc.type !== 'WEB_PORTFOLIO' ? '<div class="w-1/3 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-2"></div>' : ''}
            <div class="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
            <div class="w-[90%] h-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
            <div class="w-[80%] h-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
-           ${doc.type !== 'Web Portfolio' ? `
-           <div class="mt-4 w-1/3 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-           <div class="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-1"></div>
-           <div class="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
-           ` : ''}
         </div>
         <button class="absolute top-2 right-2 p-1.5 rounded-md bg-white/90 dark:bg-slate-800/90 text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:text-blue-600 backdrop-blur-sm z-10">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
@@ -186,16 +193,16 @@ function populateDashboard(data: UserDashboardData) {
         <h3 class="text-sm font-bold text-slate-800 dark:text-white truncate">${doc.title}</h3>
         <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center justify-between">
           <span>${typeLabel}</span>
-          <span>${doc.date}</span>
+          <span>${dateFormatted}</span>
         </p>
       </div>
     `;
     grid.appendChild(div);
 
     let badgeColor = "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
-    if (doc.status === "Selesai")     badgeColor = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20";
-    if (doc.status === "Diterbitkan") badgeColor = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
-    if (doc.status === "Draf")        badgeColor = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
+    if (doc.status === "SELESAI")     badgeColor = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20";
+    if (doc.status === "DITERBITKAN") badgeColor = "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20";
+    if (doc.status === "DRAF")        badgeColor = "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20";
 
     const tr = document.createElement("tr");
     tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group cursor-pointer";
@@ -208,9 +215,9 @@ function populateDashboard(data: UserDashboardData) {
         <span class="text-sm text-slate-600 dark:text-slate-400 font-medium">${doc.fontFamily || 'Inter'}</span>
       </td>
       <td class="py-4 px-8">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}">${doc.status}</span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border ${badgeColor}">${statusLabel}</span>
       </td>
-      <td class="py-4 px-8 text-sm text-slate-600 dark:text-slate-400 font-medium">${doc.date}</td>
+      <td class="py-4 px-8 text-sm text-slate-600 dark:text-slate-400 font-medium">${dateFormatted}</td>
       <td class="py-4 px-8 text-right">
         <button class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium text-sm">Edit</button>
       </td>
@@ -219,13 +226,12 @@ function populateDashboard(data: UserDashboardData) {
   });
 
   // --- Toggle Grid/List View ---
-  const btnGrid      = document.getElementById("btn-view-grid");
-  const btnList      = document.getElementById("btn-view-list");
-  const gridContainer= document.getElementById("recent-docs-grid");
-  const listContainer= document.getElementById("recent-docs-list-container");
+  const btnGrid       = document.getElementById("btn-view-grid");
+  const btnList       = document.getElementById("btn-view-list");
+  const gridContainer = document.getElementById("recent-docs-grid");
+  const listContainer = document.getElementById("recent-docs-list-container");
 
   if (btnGrid && btnList && gridContainer && listContainer) {
-    // Hapus event listener lama sebelum menambahkan yang baru
     const newBtnGrid = btnGrid.cloneNode(true) as HTMLElement;
     const newBtnList = btnList.cloneNode(true) as HTMLElement;
     btnGrid.parentNode?.replaceChild(newBtnGrid, btnGrid);

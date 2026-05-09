@@ -69,7 +69,7 @@ export function initChat() {
 
         // SIMPAN KE DATABASE (AI Message)
         try {
-          await api.saveChatMessage({ content: responseText, role: 'assistant' });
+          await api.saveChatMessage({ content: responseText, role: 'ASSISTANT' });
         } catch (err) {
           console.error("Gagal menyimpan chat AI:", err);
         }
@@ -85,7 +85,7 @@ export function initChat() {
 
       // SIMPAN KE DATABASE (User Message)
       try {
-        await api.saveChatMessage({ content: text, role: 'user' });
+        await api.saveChatMessage({ content: text, role: 'USER' });
       } catch (err) {
         console.error("Gagal menyimpan chat user:", err);
       }

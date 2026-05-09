@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =======================================================
+// ENUMS — Memastikan integritas data (tidak bisa salah isi)
+// =======================================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SubscriptionTier {
+  BIASA
+  GO
+  ULTRA
+}
+
+enum DocumentType {
+  ATS_CV
+  VISUAL_RESUME
+  WEB_PORTFOLIO
+}
+
+enum DocumentStatus {
+  DRAF
+  SELESAI
+  DITERBITKAN
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+// =======================================================
+// MODELS
+// =======================================================
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  password        String
+  name            String
+  role            UserRole         @default(USER)
+  profileImageUrl String?
+
+  // Fitur Langganan
+  subscriptionTier SubscriptionTier @default(BIASA)
+  aiCredits        Int              @default(10)
+
+  portfolioViews Int @default(0)
+
+  // Soft Delete
+  deletedAt DateTime?
+
+  documents    Document[]
+  chatMessages ChatMessage[]
+  aiUsageLogs  AiUsageLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model Document {
+  id     String         @id @default(uuid())
+  title  String
+  type   DocumentType
+  status DocumentStatus @default(DRAF)
+
+  // Konten Utama (semua isian wizard/form dalam format JSON)
+  content Json?
+
+  // Preferensi Desain — tersimpan per dokumen
+  templateId String? @default("standard")
+  fontFamily String? @default("Inter")
+  themeColor String? @default("blue")
+
+  // Soft Delete
+  deletedAt DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Riwayat chat spesifik dokumen ini
+  chatHistory ChatMessage[]
+  aiUsageLogs AiUsageLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, deletedAt]) // Index komposit untuk query soft-delete yang umum
+}
+
+model ChatMessage {
+  id      String   @id @default(uuid())
+  role    ChatRole
+  content String   @db.Text
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([documentId])
+}
+
+model AiUsageLog {
+  id String @id @default(uuid())
+
+  // Fitur apa yang digunakan (contoh: "GENERATE_CV", "CHAT_EDIT", "GENERATE_RESUME")
+  feature     String
+  creditsUsed Int    @default(1)
+
+  // Prompt singkat yang dikirim ke AI (untuk audit)
+  promptSummary String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Dokumen yang terkait (opsional, bisa null jika chat global)
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt]) // Untuk query analytics per periode
+}

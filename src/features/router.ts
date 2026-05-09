@@ -199,7 +199,8 @@ export function initRouter() {
 
   if (btnLaunchApp) btnLaunchApp.addEventListener("click", launchLoginApp);
   if (btnCtaLaunch) btnCtaLaunch.addEventListener("click", launchLoginApp);
-  if (btnLoginGoogle) btnLoginGoogle.addEventListener("click", launchDashboardApp);
+  // Login Google sementara dinonaktifkan — belum ada OAuth implementasi
+  // if (btnLoginGoogle) btnLoginGoogle.addEventListener("click", launchDashboardApp);
   // Tangkap event SUBMIT dari form login (bukan click dari tombol)
   const loginForm = document.querySelector('#view-login form') as HTMLFormElement;
   if (loginForm) {
@@ -355,7 +356,7 @@ export function initRouter() {
       try {
         await api.saveDocument({
           title: `CV - ${fullName}`,
-          type: 'ATS CV',
+          type: 'ATS_CV',
           content: { 
             fullName, 
             targetRole,
@@ -366,7 +367,7 @@ export function initRouter() {
             portfolio: (document.getElementById('cv-portfolio') as HTMLInputElement)?.value,
             summary: (document.getElementById('cv-summary') as HTMLTextAreaElement)?.value
           },
-          status: 'Selesai',
+          status: 'SELESAI',
           templateId: selectedTemplate,
           fontFamily: selectedFont,
           themeColor: 'blue'
@@ -600,12 +601,34 @@ export function initRouter() {
     }
   });
 
-  // --- INITIAL SESSION CHECK ---
+  // --- INITIAL SESSION CHECK — Validasi token ke server ---
   const token = localStorage.getItem('token');
   if (token) {
-    launchDashboardApp();
+    // Verifikasi token masih valid ke server
+    fetch('http://localhost:5000/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(async (res) => {
+      if (res.ok) {
+        const userData = await res.json();
+        // Perbarui data user di localStorage dengan data terbaru dari server
+        const existing = JSON.parse(localStorage.getItem('user') || '{}');
+        localStorage.setItem('user', JSON.stringify({ ...existing, ...userData }));
+        launchDashboardApp();
+      } else {
+        // Token tidak valid — bersihkan sesi
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (appWrapper) appWrapper.classList.add('hidden');
+        if (viewLanding) {
+          viewLanding.classList.remove('hidden');
+          viewLanding.classList.add('block', 'flex-col');
+        }
+      }
+    }).catch(() => {
+      // Jika backend tidak bisa dihubungi, tetap izinkan masuk (offline-first)
+      launchDashboardApp();
+    });
   } else {
-    // Default to Landing/Login if not authenticated
     if (appWrapper) appWrapper.classList.add("hidden");
     if (viewLanding) {
        viewLanding.classList.remove("hidden");
