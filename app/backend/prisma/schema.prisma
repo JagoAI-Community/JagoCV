@@ -52,8 +52,9 @@ model User {
   profileImageUrl String?
 
   // Fitur Langganan
-  subscriptionTier SubscriptionTier @default(BIASA)
-  aiCredits        Int              @default(10)
+  subscriptionTier   SubscriptionTier @default(BIASA)
+  subscriptionEndsAt DateTime?
+  aiCredits          Int              @default(10)
 
   portfolioViews Int @default(0)
 
@@ -81,8 +82,14 @@ model Document {
 
   // Preferensi Desain — tersimpan per dokumen
   templateId String? @default("standard")
+  template   Template? @relation(fields: [templateId], references: [id])
+  
   fontFamily String? @default("Inter")
   themeColor String? @default("blue")
+
+  // Publikasi & Statistik
+  slug  String? @unique
+  views Int     @default(0)
 
   // Soft Delete
   deletedAt DateTime?
@@ -139,4 +146,17 @@ model AiUsageLog {
 
   @@index([userId])
   @@index([createdAt]) // Untuk query analytics per periode
+}
+
+model Template {
+  id          String       @id @default(uuid())
+  name        String
+  type        DocumentType
+  previewUrl  String?
+  isActive    Boolean      @default(true)
+  
+  documents   Document[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
