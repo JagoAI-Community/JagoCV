@@ -1,39 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import { api } from '../../services/api';
+import { useAuth } from '../../controllers/useAuth';
 import { useTheme } from '../../controllers/useTheme';
 
 export default function AppLayout() {
-  const [user, setUser] = useState<{ name: string; role: string; profileImageUrl?: string } | null>(null);
+  const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const { toggleTheme } = useTheme();
 
   useEffect(() => {
-    // Basic auth check
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
-      return;
     }
+  }, [isAuthenticated, isLoading, navigate]);
 
-    // Try to load user from local storage first for instant render
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-
-    // Fetch fresh user data
-    api.getMe().then(data => {
-      setUser(data);
-      localStorage.setItem('user', JSON.stringify(data));
-    }).catch(err => {
-      console.error('Session invalid', err);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      navigate('/login');
-    });
-  }, [navigate]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0B1221]">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-col w-full flex-1 bg-slate-50 dark:bg-[#0B1221] min-h-screen">

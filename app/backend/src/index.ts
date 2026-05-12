@@ -9,7 +9,19 @@ import { GoogleGenAI } from '@google/genai';
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: [
+    { emit: 'event', level: 'query' },
+    { emit: 'stdout', level: 'error' },
+    { emit: 'stdout', level: 'warn' },
+  ],
+});
+
+// Logging Query Database
+(prisma as any).$on('query', (e: any) => {
+  console.log(`\x1b[36m[DB]\x1b[0m \x1b[2m${e.query}\x1b[0m \x1b[33m${e.duration}ms\x1b[0m`);
+});
+
 const PORT = process.env.PORT || 5000;
 
 // Wajib ada JWT_SECRET — tidak boleh hardcoded
@@ -25,6 +37,38 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Middleware Logging HTTP Premium
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const method = req.method;
+    const url = req.originalUrl;
+    const status = res.statusCode;
+    
+    const colors = {
+      method: {
+        GET: '\x1b[34m',    // Blue
+        POST: '\x1b[32m',   // Green
+        PUT: '\x1b[33m',    // Yellow
+        PATCH: '\x1b[33m',  // Yellow
+        DELETE: '\x1b[31m', // Red
+      }[method] || '\x1b[0m',
+      status: status >= 500 ? '\x1b[31m' : status >= 400 ? '\x1b[33m' : '\x1b[32m',
+      reset: '\x1b[0m',
+      dim: '\x1b[2m'
+    };
+
+    console.log(
+      `${colors.method}${method.padEnd(7)}${colors.reset} ` +
+      `${url.padEnd(30)} ` +
+      `${colors.status}${status}${colors.reset} ` +
+      `${colors.dim}${duration}ms${colors.reset}`
+    );
+  });
+  next();
+});
 
 // ===========================================================
 // MIDDLEWARE AUTENTIKASI
@@ -48,19 +92,41 @@ const authenticateToken = (req: any, res: Response, next: NextFunction) => {
 
 // 1. Registrasi User
 app.post('/api/auth/register', async (req: Request, res: Response) => {
-  const { email, password, name } = req.body;
-  if (!email || !password || !name) {
-    return res.status(400).json({ error: 'Nama, email, dan password wajib diisi' });
-  }
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password minimal 8 karakter' });
-  }
+  const { name, email, password } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { email, password: hashedPassword, name }
+      data: { email, password: hashedPassword, name },
+      include: {
+        socialLinks: true,
+        phones: true,
+        experience: true,
+        education: true
+      }
     });
-    res.status(201).json({ message: 'User berhasil didaftarkan', userId: user.id });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+    res.status(201).json({
+      message: 'User berhasil didaftarkan',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        headline: user.headline,
+        bio: user.bio,
+        profileImageUrl: user.profileImageUrl,
+        location: user.location,
+        subscriptionTier: user.subscriptionTier,
+        aiCredits: user.aiCredits,
+        portfolioViews: user.portfolioViews,
+        socialLinks: user.socialLinks,
+        phones: user.phones,
+        experience: user.experience,
+        education: user.education
+      }
+    });
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ error: 'Email sudah terdaftar' });
@@ -72,29 +138,40 @@ app.post('/api/auth/register', async (req: Request, res: Response) => {
 // 2. Login User
 app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email dan password wajib diisi' });
-  }
   try {
-    const user = await prisma.user.findUnique({
-      where: { email, deletedAt: null }
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      include: {
+        socialLinks: true,
+        phones: true,
+        experience: true,
+        education: true
+      }
     });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Email atau password salah' });
-    }
+    if (!user) return res.status(400).json({ error: 'Email atau password salah' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Email atau password salah' });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
     res.json({
       token,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        headline: user.headline,
+        bio: user.bio,
         profileImageUrl: user.profileImageUrl,
+        location: user.location,
         subscriptionTier: user.subscriptionTier,
         aiCredits: user.aiCredits,
         portfolioViews: user.portfolioViews,
+        socialLinks: user.socialLinks,
+        phones: user.phones,
+        experience: user.experience,
+        education: user.education
       }
     });
   } catch (error) {
@@ -106,11 +183,12 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
 app.get('/api/auth/me', authenticateToken, async (req: any, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: req.user.id, deletedAt: null },
-      select: {
-        id: true, name: true, email: true, role: true,
-        profileImageUrl: true, subscriptionTier: true,
-        aiCredits: true, portfolioViews: true
+      where: { id: req.user.id },
+      include: {
+        socialLinks: true,
+        phones: true,
+        experience: true,
+        education: true
       }
     });
     if (!user) return res.status(404).json({ error: 'Pengguna tidak ditemukan' });
@@ -125,26 +203,49 @@ app.get('/api/auth/me', authenticateToken, async (req: any, res: Response) => {
 // ===========================================================
 
 // 4. Update Profil User
-app.patch('/api/users/me', authenticateToken, async (req: any, res: Response) => {
-  const { name, profileImageUrl } = req.body;
+app.put('/api/auth/profile', authenticateToken, async (req: any, res: Response) => {
+  const { name, headline, bio, profileImageUrl, location, socialLinks, phones } = req.body;
   try {
     const updated = await prisma.user.update({
       where: { id: req.user.id },
       data: {
-        ...(name && { name }),
-        ...(profileImageUrl !== undefined && { profileImageUrl }),
+        name,
+        headline,
+        bio,
+        profileImageUrl,
+        location,
+        socialLinks: {
+          deleteMany: {},
+          create: socialLinks?.map((s: any) => ({ platform: s.platform, url: s.url })) || []
+        },
+        phones: {
+          deleteMany: {},
+          create: phones?.map((p: any) => ({ number: p.number, label: p.label || 'Utama' })) || []
+        }
       },
-      select: {
-        id: true, name: true, email: true, role: true,
-        profileImageUrl: true, subscriptionTier: true,
-        aiCredits: true, portfolioViews: true
+      include: {
+        socialLinks: true,
+        phones: true,
+        experience: true,
+        education: true
       }
     });
     res.json(updated);
   } catch (error) {
+    console.error("Update profile error:", error);
     res.status(400).json({ error: 'Gagal memperbarui profil' });
   }
 });
+
+// ===========================================================
+// HELPER FUNCTIONS
+// ===========================================================
+const generateSlug = (title: string) => {
+  return title
+    .toLowerCase()
+    .replace(/[^\w ]+/g, '')
+    .replace(/ +/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
+};
 
 // ===========================================================
 // DOCUMENT ROUTES
@@ -163,6 +264,40 @@ app.get('/api/documents', authenticateToken, async (req: any, res: Response) => 
   }
 });
 
+// 5.1 Ambil Satu Dokumen Spesifik (Bisa via ID atau SLUG)
+app.get('/api/documents/:idOrSlug', authenticateToken, async (req: any, res: Response) => {
+  const { idOrSlug } = req.params;
+  try {
+    const doc = await prisma.document.findFirst({
+      where: {
+        OR: [
+          { id: idOrSlug },
+          { slug: idOrSlug }
+        ],
+        userId: req.user.id,
+        deletedAt: null
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            headline: true,
+            bio: true,
+            location: true,
+            phones: true,
+            socialLinks: true
+          }
+        }
+      }
+    });
+    if (!doc) return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+    res.json(doc);
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal mengambil detail dokumen' });
+  }
+});
+
 // 6. Simpan Dokumen Baru (CV/Resume/Portfolio)
 app.post('/api/documents', authenticateToken, async (req: any, res: Response) => {
   const { title, type, content, status, templateId, fontFamily, themeColor } = req.body;
@@ -174,10 +309,34 @@ app.post('/api/documents', authenticateToken, async (req: any, res: Response) =>
   }
 
   try {
-    // Kurangi kredit AI user
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    if (!user || user.aiCredits <= 0) {
-      return res.status(403).json({ error: 'Kredit AI Anda habis. Silakan upgrade paket.' });
+    // Kurangi kredit AI user HANYA jika AI digunakan (opsional, tergantung logic bisnis)
+    // Untuk saat ini, kita anggap simpan manual tidak memotong kredit kecuali dari AI mode
+    const isAiGenerated = req.body.isAiGenerated === true;
+    
+    if (isAiGenerated) {
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      if (!user || user.aiCredits <= 0) {
+        return res.status(403).json({ error: 'Kredit AI Anda habis. Silakan upgrade paket.' });
+      }
+
+      // Kurangi kredit user
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { aiCredits: { decrement: 1 } }
+      });
+    }
+
+    const finalTemplateId = templateId || 'standard';
+    // Pastikan templateId ada di database untuk menghindari Foreign Key Constraint error
+    const templateExists = await prisma.template.findUnique({ where: { id: finalTemplateId } });
+    if (!templateExists) {
+      await prisma.template.create({
+        data: {
+          id: finalTemplateId,
+          name: finalTemplateId,
+          type: type as DocumentType,
+        }
+      });
     }
 
     const newDoc = await prisma.document.create({
@@ -186,33 +345,31 @@ app.post('/api/documents', authenticateToken, async (req: any, res: Response) =>
         type: type as DocumentType,
         content,
         status: (status as DocumentStatus) || DocumentStatus.DRAF,
-        templateId: templateId || 'standard',
+        templateId: finalTemplateId,
         fontFamily: fontFamily || 'Inter',
         themeColor: themeColor || 'blue',
-        userId: req.user.id
-      }
-    });
-
-    // Catat penggunaan AI
-    await prisma.aiUsageLog.create({
-      data: {
-        feature: `GENERATE_${type}`,
-        creditsUsed: 1,
-        promptSummary: `Generate dokumen: ${title}`,
         userId: req.user.id,
-        documentId: newDoc.id
+        slug: generateSlug(title)
       }
     });
 
-    // Kurangi kredit user
-    await prisma.user.update({
-      where: { id: req.user.id },
-      data: { aiCredits: { decrement: 1 } }
-    });
+    if (isAiGenerated) {
+      // Catat penggunaan AI
+      await prisma.aiUsageLog.create({
+        data: {
+          feature: `GENERATE_${type}`,
+          creditsUsed: 1,
+          promptSummary: `Generate dokumen: ${title}`,
+          userId: req.user.id,
+          documentId: newDoc.id
+        }
+      });
+    }
 
     res.status(201).json(newDoc);
-  } catch (error) {
-    res.status(400).json({ error: 'Gagal menyimpan dokumen' });
+  } catch (error: any) {
+    console.error("Save document error:", error);
+    res.status(400).json({ error: error.message || 'Gagal menyimpan dokumen' });
   }
 });
 

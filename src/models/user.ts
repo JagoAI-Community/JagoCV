@@ -8,12 +8,56 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  headline?: string;
+  bio?: string;
   subscriptionTier: SubscriptionTier;
   aiCredits: number;
   profileImageUrl?: string;
   location?: string;
   portfolioViews?: number;
+  socialLinks?: UserSocial[];
+  phones?: UserPhone[];
+  experience?: Experience[];
+  education?: Education[];
+}
+
+export interface UserSocial {
+  id: string;
+  platform: string;
+  url: string;
+}
+
+export interface UserPhone {
+  id: string;
+  number: string;
+  label: string;
+}
+
+export interface UserAddress {
+  id: string;
+  fullAddress: string;
+  isMain: boolean;
+}
+
+export interface Experience {
+  id: string;
+  company: string;
+  position: string;
+  location?: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  isCurrent: boolean;
+}
+
+export interface Education {
+  id: string;
+  institution: string;
+  degree: string;
+  fieldOfStudy?: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
 }
 // ===================================================================
 // AUTH INTERFACES

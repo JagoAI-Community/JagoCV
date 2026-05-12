@@ -16,6 +16,7 @@ export interface CvFormData {
   experiences: WorkExperience[];
   educations: Education[];
   skills: string;
+  photoUrl?: string;
 }
 
 // ===================================================================

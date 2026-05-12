@@ -39,6 +39,7 @@ export const SUBSCRIPTION_LABELS: Record<SubscriptionTier, string> = {
 
 export interface RecentDocument {
   id: string;
+  slug?: string;
   title: string;
   type: DocType;
   status: DocStatus;

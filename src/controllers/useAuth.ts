@@ -29,14 +29,11 @@ export function useAuth() {
     try {
       const data = await api.getMe();
       const user: User = {
-        id: data.id,
-        name: data.name,
-        email: data.email,
+        ...data,
         role: data.role || 'USER',
         subscriptionTier: data.subscriptionTier || 'BIASA',
         aiCredits: data.aiCredits ?? 0,
         profileImageUrl: data.profileImageUrl || DEFAULT_AVATAR,
-        location: data.location,
         portfolioViews: data.portfolioViews ?? 0,
       };
       setState({ user, isAuthenticated: true, isLoading: false, error: null });
@@ -68,8 +65,13 @@ export function useAuth() {
   const register = useCallback(async (data: RegisterData) => {
     setState(s => ({ ...s, isLoading: true, error: null }));
     try {
-      await api.register(data);
-      setState(s => ({ ...s, isLoading: false, error: null }));
+      const { token, user: userData } = await api.register(data);
+      localStorage.setItem('token', token);
+      const user: User = {
+        ...userData,
+        profileImageUrl: userData.profileImageUrl || DEFAULT_AVATAR,
+      };
+      setState({ user, isAuthenticated: true, isLoading: false, error: null });
       return true;
     } catch (err: any) {
       setState(s => ({ ...s, isLoading: false, error: err.message || 'Registrasi gagal' }));
@@ -80,6 +82,7 @@ export function useAuth() {
   /** Logout dan bersihkan state */
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    api.clearCache();
     setState({ user: null, isAuthenticated: false, isLoading: false, error: null });
   }, []);
 

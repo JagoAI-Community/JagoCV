@@ -5,15 +5,22 @@ import { api } from '../../services/api';
 
 export default function ProfileView() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const [user, setUser] = useState<{ fname?: string; lname?: string; email?: string; role?: string; profileImageUrl?: string } | null>(null);
+  const { user, logout } = useAuth();
+  const [docCount, setDocCount] = useState(0);
+  const [portfolioCount, setPortfolioCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load from local storage for instant render, then fetch fresh
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) setUser(JSON.parse(storedUser));
-    
-    api.getMe().then(data => setUser(data)).catch(console.error);
+    // Fetch document stats
+    api.getDocuments().then(docs => {
+      setDocCount(docs.filter(d => d.type !== 'PORTFOLIO').length);
+      setPortfolioCount(docs.filter(d => d.type === 'PORTFOLIO').length);
+      // Give a tiny delay for smooth animation
+      setTimeout(() => setIsLoading(false), 800);
+    }).catch(err => {
+      console.error(err);
+      setIsLoading(false);
+    });
   }, []);
 
   const handleLogout = () => {
@@ -21,142 +28,179 @@ export default function ProfileView() {
     navigate('/login');
   };
 
-  const displayName = user?.fname ? `${user.fname} ${user.lname || ''}`.trim() : 'User';
-  const displayRole = user?.role || 'Member';
+  const handleShare = () => {
+    const url = window.location.origin + '/p/' + (user?.id || '');
+    navigator.clipboard.writeText(url);
+    alert('Link profil berhasil disalin ke clipboard!');
+  };
+
+  const displayName = user?.name || 'User';
+  const displayHeadline = user?.headline || 'Pekerjaan belum diatur';
   const displayEmail = user?.email || '-';
+  const displayLocation = user?.location || 'Lokasi belum diatur';
 
   return (
     <div className="animate-[fadeIn_0.5s_ease_forwards]">
-      <div className="max-w-3xl mx-auto mt-10">
-          <Link to="/dashboard" className="mb-8 flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white px-3 py-2 rounded-xl transition-colors font-semibold w-fit">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Kembali ke Dasbor
-          </Link>
-
-          <div className="bg-white dark:bg-[#0B1221] rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none relative">
-
-            {/* Cover Banner */}
-            <div className="h-40 w-full bg-gradient-to-r from-blue-600 to-indigo-600 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-              <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-black/20 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div className="max-w-3xl mx-auto mt-10 relative">
+          
+          {/* Skeleton Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 z-50 pointer-events-none">
+              <div className="bg-white dark:bg-[#0B1221] rounded-[2rem] h-[600px] border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden animate-pulse-slow">
+                <div className="h-40 w-full bg-slate-200 dark:bg-slate-800"></div>
+                <div className="px-8 pb-10">
+                  <div className="flex -mt-16 mb-6 gap-4">
+                    <div className="w-28 h-28 rounded-full bg-white dark:bg-[#0B1221] p-1.5">
+                      <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="h-8 w-1/3 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                    <div className="h-4 w-1/2 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+                    <div className="flex gap-2">
+                      <div className="h-8 w-24 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                      <div className="h-8 w-32 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 pt-6">
+                      <div className="h-32 bg-slate-50 dark:bg-slate-800/40 rounded-2xl"></div>
+                      <div className="h-32 bg-slate-50 dark:bg-slate-800/40 rounded-2xl"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
 
-            {/* Profile Content */}
-            <div className="px-8 pb-10">
+          <div className={`transition-all duration-500 ${isLoading ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}>
+            <Link to="/dashboard" className="mb-8 flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white px-3 py-2 rounded-xl transition-colors font-semibold w-fit">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Kembali ke Dasbor
+            </Link>
 
-              {/* Avatar & Header Actions */}
-              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end -mt-16 mb-6 gap-4">
-                <div className="relative group">
-                  <div className="p-1.5 bg-white dark:bg-[#0B1221] rounded-full inline-block">
-                    <img src={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${displayName}&background=eff6ff&color=3b82f6`} alt="Profile" className="w-28 h-28 rounded-full border-4 border-slate-100 dark:border-slate-800 object-cover shadow-lg bg-slate-200 dark:bg-slate-700" />
-                  </div>
-                  <button className="absolute bottom-3 right-3 p-2 bg-blue-600 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-500">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                  </button>
-                </div>
-
-                <div className="mb-2 flex gap-3 w-full sm:w-auto">
-                  <Link to="/profile/edit" className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition-colors border border-slate-200 dark:border-slate-700/50 text-center">
-                    Edit Profil
-                  </Link>
-                  <button className="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-blue-500/30">
-                    Bagikan Profil
-                  </button>
-                </div>
+            <div className="bg-white dark:bg-[#0B1221] rounded-[2rem] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none relative">
+              {/* Cover Banner */}
+              <div className="h-40 w-full bg-gradient-to-r from-blue-600 to-indigo-600 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.2) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-black/20 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/40 to-transparent"></div>
               </div>
 
-              {/* Name, Role, Email */}
-              <div className="mb-8">
-                <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">{displayName}</h3>
-                <p className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-4">{displayRole}</p>
+              {/* Profile Content */}
+              <div className="px-8 pb-10">
 
-                <div className="flex flex-wrap gap-3 mt-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm text-slate-600 dark:text-slate-300">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span>{displayEmail}</span>
+                {/* Avatar & Header Actions */}
+                <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end -mt-16 mb-6 gap-4">
+                  <div className="relative group">
+                    <div className="p-1.5 bg-white dark:bg-[#0B1221] rounded-full inline-block">
+                      <img src={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${displayName}&background=eff6ff&color=3b82f6`} alt="Profile" className="w-28 h-28 rounded-full border-4 border-slate-100 dark:border-slate-800 object-cover shadow-lg bg-slate-200 dark:bg-slate-700" />
+                    </div>
+                    <Link to="/profile/edit" className="absolute bottom-3 right-3 p-2 bg-blue-600 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </Link>
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm text-slate-600 dark:text-slate-300">
-                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <span>Jakarta, ID</span>
+
+                  <div className="mb-2 flex gap-3 w-full sm:w-auto">
+                    <Link to="/profile/edit" className="flex-1 sm:flex-none px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-semibold transition-colors border border-slate-200 dark:border-slate-700/50 text-center">
+                      Edit Profil
+                    </Link>
+                    <button onClick={handleShare} className="flex-1 sm:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-blue-500/30">
+                      Bagikan Profil
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              {/* Main Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Name, Role, Email */}
+                <div className="mb-8">
+                  <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">{displayName}</h3>
+                  <p className="text-lg text-blue-600 dark:text-blue-400 font-medium mb-4">{displayHeadline}</p>
 
-                {/* Left: Status + Stats */}
-                <div className="space-y-4">
-                  {/* Status Akun */}
-                  <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/50">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Status Akun</h4>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                      </div>
-                      <div>
-                        <p id="pf-subs-tier" className="text-sm font-extrabold text-slate-900 dark:text-white">Biasa</p>
-                        <p className="text-[11px] font-semibold text-green-600 dark:text-green-400 mt-0.5">Aktif</p>
-                      </div>
-                      <button id="btn-upgrade-plan" className="ml-auto text-blue-600 dark:text-blue-400 text-sm font-bold hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Upgrade</button>
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm text-slate-600 dark:text-slate-300">
+                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                      <span>{displayEmail}</span>
                     </div>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/50">
-                      <div className="text-indigo-500 dark:text-indigo-400 mb-2 bg-indigo-100 dark:bg-indigo-900/40 w-8 h-8 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                      </div>
-                      <div id="pf-cv-count" className="text-2xl font-extrabold text-slate-900 dark:text-white mb-0.5">0</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">CV Dibuat</div>
-                    </div>
-                    <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/50">
-                      <div className="text-cyan-500 dark:text-cyan-400 mb-2 bg-cyan-100 dark:bg-cyan-900/40 w-8 h-8 rounded-lg flex items-center justify-center">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                      </div>
-                      <div id="pf-portfolio-count" className="text-2xl font-extrabold text-slate-900 dark:text-white mb-0.5">0</div>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portfolio</div>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-xl text-sm text-slate-600 dark:text-slate-300">
+                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      <span>{displayLocation}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Settings */}
-                <div className="space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Pengaturan &amp; Bantuan</h4>
+                {/* Main Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <Link to="/settings" className="w-full flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/50 transition-colors group">
-                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-                      <div className="p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-slate-800 group-hover:scale-105 group-hover:text-blue-500 transition-all">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  {/* Left: Status + Stats */}
+                  <div className="space-y-4">
+                    {/* Status Akun */}
+                    <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/50">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Status Akun</h4>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        </div>
+                        <div>
+                          <p id="pf-subs-tier" className="text-sm font-extrabold text-slate-900 dark:text-white capitalize">{user?.subscriptionTier?.toLowerCase() || 'Biasa'}</p>
+                          <p className="text-[11px] font-semibold text-green-600 dark:text-green-400 mt-0.5">Aktif</p>
+                        </div>
+                        <Link to="/pricing" className="ml-auto text-blue-600 dark:text-blue-400 text-sm font-bold hover:text-blue-700 dark:hover:text-blue-300 transition-colors">Upgrade</Link>
                       </div>
-                      <span className="font-semibold text-[15px] group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pengaturan Akun</span>
                     </div>
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-                  </Link>
 
-                  <Link to="/help" className="w-full flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/50 transition-colors group">
-                    <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
-                      <div className="p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-slate-800 group-hover:scale-105 group-hover:text-amber-500 transition-all">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/50">
+                        <div className="text-indigo-500 dark:text-indigo-400 mb-2 bg-indigo-100 dark:bg-indigo-900/40 w-8 h-8 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div id="pf-cv-count" className="text-2xl font-extrabold text-slate-900 dark:text-white mb-0.5">{docCount}</div>
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">CV Dibuat</div>
                       </div>
-                      <span className="font-semibold text-[15px] group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pusat Bantuan</span>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/50">
+                        <div className="text-cyan-500 dark:text-cyan-400 mb-2 bg-cyan-100 dark:bg-cyan-900/40 w-8 h-8 rounded-lg flex items-center justify-center">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                        </div>
+                        <div id="pf-portfolio-count" className="text-2xl font-extrabold text-slate-900 dark:text-white mb-0.5">{portfolioCount}</div>
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Portfolio</div>
+                      </div>
                     </div>
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-                  </Link>
+                  </div>
 
-                  <button onClick={handleLogout} className="w-full flex items-center justify-between p-3.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl border border-red-200 dark:border-red-500/30 transition-colors group mt-2">
-                    <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
-                      <div className="p-2 rounded-lg bg-white dark:bg-red-500/20 shadow-sm border border-red-100 dark:border-red-500/30 group-hover:scale-105 transition-transform text-red-500">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                  {/* Right: Settings */}
+                  <div className="space-y-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Pengaturan &amp; Bantuan</h4>
+
+                    <Link to="/settings" className="w-full flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/50 transition-colors group">
+                      <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                        <div className="p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-slate-800 group-hover:scale-105 group-hover:text-blue-500 transition-all">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        <span className="font-semibold text-[15px] group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pengaturan Akun</span>
                       </div>
-                      <span className="font-bold text-[15px] group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">Keluar Akun</span>
-                    </div>
-                  </button>
+                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                    </Link>
+
+                    <Link to="/help" className="w-full flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/50 transition-colors group">
+                      <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                        <div className="p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-slate-800 group-hover:scale-105 group-hover:text-amber-500 transition-all">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <span className="font-semibold text-[15px] group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Pusat Bantuan</span>
+                      </div>
+                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                    </Link>
+
+                    <button onClick={handleLogout} className="w-full flex items-center justify-between p-3.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl border border-red-200 dark:border-red-500/30 transition-colors group mt-2">
+                      <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+                        <div className="p-2 rounded-lg bg-white dark:bg-red-500/20 shadow-sm border border-red-100 dark:border-red-500/30 group-hover:scale-105 transition-transform text-red-500">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        </div>
+                        <span className="font-bold text-[15px] group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">Keluar Akun</span>
+                      </div>
+                    </button>
+                  </div>
+
                 </div>
-
               </div>
             </div>
           </div>
