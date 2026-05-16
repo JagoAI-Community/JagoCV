@@ -488,7 +488,7 @@ app.post('/api/chat/generate', authenticateToken, async (req: any, res: Response
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       contents: prompt,
     });
     
@@ -529,6 +529,142 @@ app.post('/api/chat/generate', authenticateToken, async (req: any, res: Response
   } catch (error: any) {
     console.error("AI Generation Error:", error);
     res.status(500).json({ error: 'Gagal menghasilkan respons AI' });
+  }
+});
+
+// ===========================================================
+// EXPERIENCE ROUTES
+// ===========================================================
+
+app.get('/api/experience', authenticateToken, async (req: any, res: Response) => {
+  try {
+    const experiences = await prisma.experience.findMany({
+      where: { userId: req.user.id },
+      orderBy: { startDate: 'desc' }
+    });
+    res.json(experiences);
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal mengambil data pengalaman' });
+  }
+});
+
+app.post('/api/experience', authenticateToken, async (req: any, res: Response) => {
+  const { company, position, location, startDate, endDate, description, isCurrent } = req.body;
+  try {
+    const experience = await prisma.experience.create({
+      data: {
+        company,
+        position,
+        location,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
+        description,
+        isCurrent: isCurrent || false,
+        userId: req.user.id
+      }
+    });
+    res.status(201).json(experience);
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal menambah pengalaman' });
+  }
+});
+
+app.put('/api/experience/:id', authenticateToken, async (req: any, res: Response) => {
+  const { id } = req.params;
+  const { company, position, location, startDate, endDate, description, isCurrent } = req.body;
+  try {
+    const experience = await prisma.experience.update({
+      where: { id, userId: req.user.id },
+      data: {
+        company,
+        position,
+        location,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : (isCurrent ? null : undefined),
+        description,
+        isCurrent
+      }
+    });
+    res.json(experience);
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal memperbarui pengalaman' });
+  }
+});
+
+app.delete('/api/experience/:id', authenticateToken, async (req: any, res: Response) => {
+  const { id } = req.params;
+  try {
+    await prisma.experience.delete({ where: { id, userId: req.user.id } });
+    res.json({ message: 'Pengalaman berhasil dihapus' });
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal menghapus pengalaman' });
+  }
+});
+
+// ===========================================================
+// EDUCATION ROUTES
+// ===========================================================
+
+app.get('/api/education', authenticateToken, async (req: any, res: Response) => {
+  try {
+    const education = await prisma.education.findMany({
+      where: { userId: req.user.id },
+      orderBy: { startDate: 'desc' }
+    });
+    res.json(education);
+  } catch (error) {
+    res.status(500).json({ error: 'Gagal mengambil data pendidikan' });
+  }
+});
+
+app.post('/api/education', authenticateToken, async (req: any, res: Response) => {
+  const { institution, degree, fieldOfStudy, startDate, endDate, description } = req.body;
+  try {
+    const education = await prisma.education.create({
+      data: {
+        institution,
+        degree,
+        fieldOfStudy,
+        startDate: new Date(startDate),
+        endDate: endDate ? new Date(endDate) : null,
+        description,
+        userId: req.user.id
+      }
+    });
+    res.status(201).json(education);
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal menambah pendidikan' });
+  }
+});
+
+app.put('/api/education/:id', authenticateToken, async (req: any, res: Response) => {
+  const { id } = req.params;
+  const { institution, degree, fieldOfStudy, startDate, endDate, description } = req.body;
+  try {
+    const education = await prisma.education.update({
+      where: { id, userId: req.user.id },
+      data: {
+        institution,
+        degree,
+        fieldOfStudy,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        description
+      }
+    });
+    res.json(education);
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal memperbarui pendidikan' });
+  }
+});
+
+app.delete('/api/education/:id', authenticateToken, async (req: any, res: Response) => {
+  const { id } = req.params;
+  try {
+    await prisma.education.delete({ where: { id, userId: req.user.id } });
+    res.json({ message: 'Pendidikan berhasil dihapus' });
+  } catch (error) {
+    res.status(400).json({ error: 'Gagal menghapus pendidikan' });
   }
 });
 
