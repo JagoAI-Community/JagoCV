@@ -381,6 +381,20 @@ app.patch('/api/documents/:id', authenticateToken, async (req: any, res: Respons
     const doc = await prisma.document.findFirst({ where: { id, userId: req.user.id, deletedAt: null } });
     if (!doc) return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
 
+    // Pastikan templateId ada di database untuk menghindari Foreign Key Constraint error saat update
+    if (templateId) {
+      const templateExists = await prisma.template.findUnique({ where: { id: templateId } });
+      if (!templateExists) {
+        await prisma.template.create({
+          data: {
+            id: templateId,
+            name: templateId,
+            type: doc.type, // Gunakan tipe dokumen yang sudah ada
+          }
+        });
+      }
+    }
+
     const updated = await prisma.document.update({
       where: { id },
       data: {
@@ -394,6 +408,7 @@ app.patch('/api/documents/:id', authenticateToken, async (req: any, res: Respons
     });
     res.json(updated);
   } catch (error) {
+    console.error("Patch document error:", error);
     res.status(400).json({ error: 'Gagal memperbarui dokumen' });
   }
 });
