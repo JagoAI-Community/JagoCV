@@ -1,4 +1,15 @@
-const API_URL = 'http://localhost:5000/api';
+const getApiUrl = () => {
+  if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return '/api';
+};
+
+const API_URL = getApiUrl();
 
 export const api = {
   // Fungsi umum untuk fetch dengan Auth Token

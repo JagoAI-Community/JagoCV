@@ -1,7 +1,18 @@
 import type { SaveDocumentPayload } from '../models/document';
 import type { LoginCredentials, RegisterData, AuthResponse } from '../models/user';
 
-const API_URL = 'http://localhost:5000/api';
+const getApiUrl = () => {
+  if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return '/api';
+};
+
+const API_URL = getApiUrl();
 
 /**
  * Service API — Abstraksi fetch dengan auth token.
