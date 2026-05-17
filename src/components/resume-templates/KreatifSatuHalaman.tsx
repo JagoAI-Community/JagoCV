@@ -1,11 +1,16 @@
 import { Globe, Mail, Phone, MapPin, Link as LinkIcon } from "lucide-react";
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Kreatif Satu Halaman',
+  desc: 'Desain dinamis dengan penekanan pada visual keterampilan & hobi.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function CvA4SatuHalaman({ data }: Props) {
+export default function KreatifSatuHalaman({ data }: Props) {
   return (
     <div className="bg-slate-200 min-h-screen py-10 flex items-center justify-center font-sans tracking-normal overflow-auto">
       {/* 

@@ -1,11 +1,16 @@
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Modern Dua Kolom',
+  desc: 'Bersih, profesional, dan efisien dengan pembagian kolom info pribadi & portofolio.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function SinglePageResume({ data }: Props) {
+export default function ModernDuaKolom({ data }: Props) {
   const contacts = [];
   if (data.profile.contact.website) contacts.push({ icon: Globe, value: data.profile.contact.website });
   if (data.profile.contact.email) contacts.push({ icon: Mail, value: data.profile.contact.email });

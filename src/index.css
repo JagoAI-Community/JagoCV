@@ -55,3 +55,12 @@
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* Hide scrollbar utility for all major browsers */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

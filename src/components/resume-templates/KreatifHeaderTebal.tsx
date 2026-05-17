@@ -1,11 +1,16 @@
 import { Globe, Mail, Phone, MapPin } from "lucide-react";
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Modern Web/Creative',
+  desc: 'Tata letak modern dengan visual header tebal & dinamis.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function A4WebResume({ data }: Props) {
+export default function KreatifHeaderTebal({ data }: Props) {
   const contacts = [];
   if (data.profile.contact.website) contacts.push({ icon: Globe, value: data.profile.contact.website });
   if (data.profile.contact.email) contacts.push({ icon: Mail, value: data.profile.contact.email });

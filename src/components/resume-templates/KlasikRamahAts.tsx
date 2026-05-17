@@ -1,11 +1,16 @@
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Klasik Ramah ATS',
+  desc: 'Format satu halaman standar industri yang ramah sistem penyaringan ATS.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function OnePageCV({ data }: Props) {
+export default function KlasikRamahAts({ data }: Props) {
   const skillsList = Object.entries(data.profile.skills || {}).map(([category, items]) => ({
     category,
     items

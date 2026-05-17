@@ -1,13 +1,16 @@
-const LAYOUTS = [
-  { value: "standard", label: "Layout Standar ATS-Friendly", desc: "Profesional & Korporat" },
-  { value: "tech-creative", label: "Layout Tech/Creative", desc: "Fokus pada Portofolio & Project" },
-  { value: "entry-level", label: "Layout Entry-Level", desc: "Mahasiswa & Fresh Graduate" },
-  { value: "two-column", label: "Layout Modern Dua Kolom", desc: "The All-Rounder" },
-  { value: "functional", label: "Layout Fungsional", desc: "Skill-Based" },
-  { value: "academic", label: "Layout Akademik & Riset", desc: "True Curriculum Vitae" },
-  { value: "executive", label: "Layout Executive", desc: "Manager & Leadership" },
-  { value: "gallery", label: "Layout Portofolio Galeri", desc: "Visual-Heavy" },
-];
+import { useState } from 'react';
+
+// Dynamically import all templates in the resume-templates folder to scan their metadata
+const templates = (import.meta as any).glob('../resume-templates/*.tsx', { eager: true });
+
+const LAYOUTS = Object.entries(templates).map(([path, module]: any) => {
+  const id = path.split('/').pop()?.replace('.tsx', '') || '';
+  return {
+    value: id,
+    label: module.metadata?.name || id,
+    desc: module.metadata?.desc || 'Desain layout resume premium.'
+  };
+});
 
 const FONTS = [
   { value: "Inter", label: "Inter", desc: "Modern & Bersih" },
@@ -16,57 +19,15 @@ const FONTS = [
   { value: "Playfair Display", label: "Playfair", desc: "Mewah & Kreatif" },
 ];
 
-// Mini document preview per layout
 const LayoutPreview = ({ value }: { value: string }) => {
   const cls = "bg-slate-400/30 rounded-sm";
-  if (value === "standard") return (
-    <div className="w-10 h-14 bg-white/50 dark:bg-[#1A2133] rounded border border-slate-300 dark:border-slate-700 flex flex-col gap-1 p-1.5 overflow-hidden">
+  return (
+    <div className="w-10 h-14 bg-white/50 dark:bg-[#1A2133] rounded border border-slate-300 dark:border-slate-700 flex flex-col gap-1 p-1.5 overflow-hidden shrink-0">
       <div className="w-2/3 h-0.5 bg-current rounded-sm mx-auto opacity-50"></div>
       <div className="w-1/2 h-[1px] bg-slate-400/50 rounded-sm mx-auto"></div>
       <div className={`w-full h-[1px] ${cls} mt-0.5`}></div>
       <div className={`w-4/5 h-[1px] ${cls}`}></div>
       <div className={`w-full h-[1px] ${cls}`}></div>
-    </div>
-  );
-  if (value === "tech-creative") return (
-    <div className="w-10 h-14 bg-white/50 dark:bg-[#1A2133] rounded border border-slate-300 dark:border-slate-700 flex flex-col gap-0.5 p-1.5 overflow-hidden">
-      <div className={`w-full h-[2px] ${cls} mb-0.5`}></div>
-      <div className="flex flex-row gap-1 flex-1">
-        <div className="flex-1 flex flex-col gap-0.5">
-          <div className={`w-full h-[1px] ${cls}`}></div>
-          <div className={`w-4/5 h-[1px] ${cls}`}></div>
-        </div>
-        <div className="w-1/3 border-l border-slate-400/20 pl-[1px] flex flex-col gap-0.5">
-          <div className={`w-full h-[1px] ${cls}`}></div>
-          <div className={`w-3/4 h-[1px] ${cls}`}></div>
-        </div>
-      </div>
-    </div>
-  );
-  if (value === "two-column") return (
-    <div className="w-10 h-14 bg-white/50 dark:bg-[#1A2133] rounded border border-slate-300 dark:border-slate-700 flex flex-col gap-1 p-1.5 overflow-hidden">
-      <div className={`w-1/2 h-[2px] ${cls}`}></div>
-      <div className="flex flex-row gap-1 flex-1">
-        <div className="w-1/2 flex flex-col gap-[2px]">
-          <div className={`w-full h-[1px] ${cls}`}></div>
-          <div className={`w-full h-[1px] ${cls}`}></div>
-          <div className={`w-4/5 h-[1px] ${cls} mt-0.5`}></div>
-        </div>
-        <div className="w-1/2 flex flex-col gap-[2px]">
-          <div className={`w-full h-[1px] ${cls}`}></div>
-          <div className={`w-4/5 h-[1px] ${cls}`}></div>
-        </div>
-      </div>
-    </div>
-  );
-  // Default preview
-  return (
-    <div className="w-10 h-14 bg-white/50 dark:bg-[#1A2133] rounded border border-slate-300 dark:border-slate-700 flex flex-col gap-1 p-1.5 overflow-hidden">
-      <div className={`w-full h-[2px] ${cls}`}></div>
-      <div className={`w-full h-[1px] ${cls}`}></div>
-      <div className={`w-4/5 h-[1px] ${cls}`}></div>
-      <div className={`w-full h-[1px] ${cls} mt-0.5`}></div>
-      <div className={`w-5/6 h-[1px] ${cls}`}></div>
     </div>
   );
 };
@@ -79,6 +40,8 @@ export const LayoutSelection = ({
   stepNumber?: number | string
 }) => {
   const t = theme === "indigo" ? "indigo" : theme === "cyan" ? "cyan" : "blue";
+  const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]?.value || "");
+  const [selectedFont, setSelectedFont] = useState(FONTS[0]?.value || "Inter");
 
   return (
     <div className="rounded-[24px] p-6 border border-slate-200 dark:border-[#2A3143] bg-transparent flex flex-col mt-6 space-y-8">
@@ -93,34 +56,39 @@ export const LayoutSelection = ({
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {LAYOUTS.map((layout, i) => (
-            <label
-              key={layout.value}
-              className={`relative flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all
-                ${i === 0
-                  ? `border-${t}-500 bg-${t}-50 dark:bg-${t}-500/10 filter hover:brightness-110`
-                  : 'border-slate-300 dark:border-[#2A3143] hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 bg-transparent'
-                }`}
-            >
-              <input
-                type="radio"
-                name="layout"
-                value={layout.value}
-                defaultChecked={i === 0}
-                className="sr-only"
-              />
-              <div className="flex items-center gap-4">
-                <LayoutPreview value={layout.value} />
-                <div>
-                  <p className="font-bold text-slate-900 dark:text-white text-sm">{layout.label}</p>
-                  <p className={`text-[10px] mt-0.5 ${i === 0 ? `text-${t}-600 dark:text-${t}-400` : 'text-slate-500'}`}>{layout.desc}</p>
+          {LAYOUTS.map((layout) => {
+            const isSelected = selectedLayout === layout.value;
+            return (
+              <label
+                key={layout.value}
+                onClick={() => setSelectedLayout(layout.value)}
+                className={`relative flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all
+                  ${isSelected
+                    ? `border-${t}-500 bg-${t}-50 dark:bg-${t}-500/10 filter hover:brightness-110`
+                    : 'border-slate-300 dark:border-[#2A3143] hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 bg-transparent'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="layout"
+                  value={layout.value}
+                  checked={isSelected}
+                  readOnly
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-4">
+                  <LayoutPreview value={layout.value} />
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white text-sm">{layout.label}</p>
+                    <p className={`text-[10px] mt-0.5 ${isSelected ? `text-${t}-600 dark:text-${t}-400` : 'text-slate-500'}`}>{layout.desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${i === 0 ? `border-${t}-500` : 'border-slate-400 dark:border-slate-600'}`}>
-                {i === 0 && <div className={`w-2.5 h-2.5 bg-${t}-500 rounded-full`}></div>}
-              </div>
-            </label>
-          ))}
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? `border-${t}-500` : 'border-slate-400 dark:border-slate-600'}`}>
+                  {isSelected && <div className={`w-2.5 h-2.5 bg-${t}-500 rounded-full`}></div>}
+                </div>
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -133,29 +101,34 @@ export const LayoutSelection = ({
           Pilih Font Dokumen
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {FONTS.map((font, i) => (
-            <label
-              key={font.value}
-              className={`flex flex-col items-center p-3 border rounded-xl cursor-pointer transition-all
-                ${i === 0
-                  ? `border-${t}-500 bg-${t}-50 dark:bg-${t}-500/10`
-                  : 'border-slate-300 dark:border-[#2A3143] hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-white/5'
-                }`}
-            >
-              <input
-                type="radio"
-                name="font"
-                value={font.value}
-                defaultChecked={i === 0}
-                className="sr-only"
-              />
-              <span className="text-sm font-bold text-slate-800 dark:text-white mb-0.5" style={{ fontFamily: font.value }}>
-                Aa
-              </span>
-              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{font.label}</span>
-              <span className="text-[10px] text-slate-400 mt-0.5">{font.desc}</span>
-            </label>
-          ))}
+          {FONTS.map((font) => {
+            const isSelected = selectedFont === font.value;
+            return (
+              <label
+                key={font.value}
+                onClick={() => setSelectedFont(font.value)}
+                className={`flex flex-col items-center p-3 border rounded-xl cursor-pointer transition-all
+                  ${isSelected
+                    ? `border-${t}-500 bg-${t}-50 dark:bg-${t}-500/10`
+                    : 'border-slate-300 dark:border-[#2A3143] hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="font"
+                  value={font.value}
+                  checked={isSelected}
+                  readOnly
+                  className="sr-only"
+                />
+                <span className="text-sm font-bold text-slate-800 dark:text-white mb-0.5" style={{ fontFamily: font.value }}>
+                  Aa
+                </span>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{font.label}</span>
+                <span className="text-[10px] text-slate-400 mt-0.5">{font.desc}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
 

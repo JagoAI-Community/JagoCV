@@ -1,11 +1,16 @@
 import { Globe, Lightbulb, Mail, MapPin, Phone, UserCircle2 } from "lucide-react";
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Minimalis Tech',
+  desc: 'Sangat cocok untuk software developer, insinyur IT, dan bidang kreatif.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function A4SinglePageResume({ data }: Props) {
+export default function MinimalisTeknologi({ data }: Props) {
   const contacts = [];
   if (data.profile.contact.website) contacts.push({ icon: Globe, text: data.profile.contact.website, url: data.profile.contact.website });
   if (data.profile.contact.email) contacts.push({ icon: Mail, text: data.profile.contact.email, url: `mailto:${data.profile.contact.email}` });

@@ -2,11 +2,16 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ResumeData } from '../../models/resume.types';
 
+export const metadata = {
+  name: 'Layout Dua Kolom Modern',
+  desc: 'Desain dual-column yang modern dan efisien memaksimalkan penggunaan ruang.'
+};
+
 interface Props {
   data: ResumeData;
 }
 
-export default function ModernInteractiveResume({ data }: Props) {
+export default function CorporateElegan({ data }: Props) {
   const skillsList = Object.entries(data.profile.skills || {}).map(([category, items]) => ({
     category,
     items
