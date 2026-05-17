@@ -72,6 +72,15 @@ export default function ModernMinimalis({ data }: Props) {
         }
       ];
 
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="bg-slate-200 flex items-center justify-center py-10 px-4 print:p-0 print:bg-white w-full h-full overflow-auto hide-scrollbar">
       {/* A4 Canvas */}
@@ -184,7 +193,7 @@ export default function ModernMinimalis({ data }: Props) {
                 <div key={idx} className="relative pl-5 border-l border-indigo-100 space-y-1">
                   <div className="flex justify-between items-start gap-2">
                     <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                      {exp.title} &mdash; <span className="font-medium text-slate-600">{exp.company}</span>
+                      {exp.title} &mdash; <span className="inline-block text-slate-600" style={entityStyleCSS}>{exp.company}</span>
                     </h4>
                     <span className="px-2 py-0.5 mt-0.5 bg-indigo-600 text-white text-[9px] font-bold rounded-full uppercase shrink-0">
                       {exp.period}
@@ -246,7 +255,7 @@ export default function ModernMinimalis({ data }: Props) {
                 <div key={idx} className="flex justify-between items-center bg-slate-50 p-3 border-r-2 border-slate-200">
                   <div className="space-y-0.5">
                     <h3 className="text-[13px] font-bold text-slate-900">{edu.degree}</h3>
-                    <p className="text-[11px] text-slate-500">{edu.campus}</p>
+                    <p className="text-[11px] text-slate-500 inline-block" style={entityStyleCSS}>{edu.campus}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0 ml-4">
                     <span className="px-2 py-0.5 bg-indigo-600 text-white text-[9px] rounded uppercase">{edu.year}</span>

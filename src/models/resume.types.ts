@@ -34,4 +34,11 @@ export interface ResumeData {
     image?: string;
   }[];
   availability?: string;
+  design?: {
+    entityStyle?: {
+      isBold: boolean;
+      color: string;
+      hasBadge: boolean;
+    };
+  };
 }

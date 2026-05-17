@@ -17,6 +17,15 @@ export default function CorporateElegan({ data }: Props) {
     items
   }));
 
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="min-h-screen w-full bg-slate-200 py-10 overflow-x-auto flex justify-center items-start selection:bg-primary-200 selection:text-primary-900">
       
@@ -151,7 +160,7 @@ export default function CorporateElegan({ data }: Props) {
                       <div className="w-1 bg-secondary-400 shrink-0"></div>
                       <div className="flex-1">
                         <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-1 xl:gap-4 mb-2">
-                          <h4 className="font-bold text-lg leading-tight text-slate-900">{exp.title} — {exp.company}</h4>
+                          <h4 className="font-bold text-lg leading-tight text-slate-900">{exp.title} — <span className="text-slate-600 inline-block" style={entityStyleCSS}>{exp.company}</span></h4>
                           <span className="text-[10px] bg-primary-600 text-white rounded px-2 py-1 font-bold whitespace-nowrap self-start">
                             {exp.period}
                           </span>
@@ -219,7 +228,7 @@ export default function CorporateElegan({ data }: Props) {
                   <div className="space-y-4">
                     {data.education.map((edu, idx) => (
                       <div key={idx}>
-                        <h3 className="font-bold text-sm text-slate-900 text-left">{edu.degree} @ {edu.campus}</h3>
+                        <h3 className="font-bold text-sm text-slate-900 text-left">{edu.degree} @ <span className="inline-block" style={entityStyleCSS}>{edu.campus}</span></h3>
                         <p className="text-[11px] text-white mt-1 font-medium bg-primary-600 inline-block px-2 py-0.5 rounded text-left">{edu.year} • {edu.gpa}</p>
                       </div>
                     ))}

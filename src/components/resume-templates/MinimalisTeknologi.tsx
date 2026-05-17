@@ -22,6 +22,15 @@ export default function MinimalisTeknologi({ data }: Props) {
     items
   }));
 
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="bg-slate-200 min-h-screen py-10 flex justify-center items-start overflow-x-auto font-sans">
       {/* Resume Container (A4 Proportions) */}
@@ -146,7 +155,7 @@ export default function MinimalisTeknologi({ data }: Props) {
                   <div key={idx} className="relative pl-6 border-l-2 border-primary-200 before:absolute before:-left-[9px] before:top-1.5 before:w-4 before:h-4 before:bg-white before:border-4 before:border-primary-500 before:rounded-full">
                     <div className="flex justify-between items-start mb-3 gap-4">
                       <h4 className="text-[17px] font-bold text-slate-900 leading-tight">
-                        {exp.title} <span className="font-medium text-primary-700 select-none">&mdash;</span> {exp.company}
+                        {exp.title} <span className="font-medium text-primary-700 select-none">&mdash;</span> <span className="inline-block" style={entityStyleCSS}>{exp.company}</span>
                       </h4>
                       <span className="shrink-0 px-3 py-1 bg-primary-600 text-white text-[11px] font-bold tracking-wider rounded uppercase shadow-sm">
                         {exp.period}
@@ -216,7 +225,7 @@ export default function MinimalisTeknologi({ data }: Props) {
                     <div className="flex justify-between items-start gap-4">
                       <div>
                         <h3 className="text-lg font-bold text-slate-900 mb-0.5">{edu.degree}</h3>
-                        <h3 className="text-sm font-semibold text-primary-700">{edu.campus}</h3>
+                        <h3 className="text-sm font-semibold inline-block" style={entityStyleCSS}>{edu.campus}</h3>
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
                         <span className="px-2.5 py-0.5 bg-primary-600 text-white text-[11px] font-bold rounded shadow-sm">

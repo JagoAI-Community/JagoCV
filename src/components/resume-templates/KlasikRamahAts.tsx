@@ -16,6 +16,15 @@ export default function KlasikRamahAts({ data }: Props) {
     items
   }));
 
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="min-h-screen bg-slate-200 flex items-center justify-center py-10 font-sans text-sm text-slate-900 overflow-auto">
       <main className="w-[210mm] min-h-[297mm] bg-white shadow-xl overflow-hidden flex flex-row shrink-0 transform origin-top md:scale-100 scale-75">
@@ -142,7 +151,7 @@ export default function KlasikRamahAts({ data }: Props) {
                     <div className="absolute w-3 h-3 bg-primary-600 rounded-full -left-[7px] top-1.5 ring-4 ring-white"></div>
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-base text-slate-900">
-                        {exp.title} &mdash; <span className="font-semibold text-slate-700">{exp.company}</span>
+                        {exp.title} &mdash; <span className="inline-block text-slate-700" style={entityStyleCSS}>{exp.company}</span>
                       </h4>
                       <span className="bg-primary-600 text-white px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap">
                         {exp.period}
@@ -214,7 +223,7 @@ export default function KlasikRamahAts({ data }: Props) {
                   {data.education.map((edu, idx) => (
                     <div key={idx}>
                       <h3 className="font-bold text-slate-900">{edu.degree}</h3>
-                      <h3 className="text-slate-600 text-sm mb-2">{edu.campus}</h3>
+                      <h3 className="text-sm mb-2 inline-block text-slate-600" style={entityStyleCSS}>{edu.campus}</h3>
                       <div className="flex gap-2">
                         <span className="bg-primary-100 text-primary-800 px-2 py-0.5 rounded text-xs font-semibold">
                           {edu.year}

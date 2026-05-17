@@ -17,6 +17,15 @@ export default function ModernDuaKolom({ data }: Props) {
   if (data.profile.contact.phone) contacts.push({ icon: Phone, value: data.profile.contact.phone });
   if (data.profile.contact.location) contacts.push({ icon: MapPin, value: data.profile.contact.location });
 
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="min-h-screen bg-slate-200 py-10 flex justify-center items-start font-sans overflow-auto">
       {/* Container A4 Page */}
@@ -137,7 +146,7 @@ export default function ModernDuaKolom({ data }: Props) {
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-bold text-slate-900 text-base leading-tight pr-4">
                         {exp.title} &mdash;{" "}
-                        <span className="font-semibold text-slate-600">
+                        <span className="inline-block text-slate-600" style={entityStyleCSS}>
                           {exp.company}
                         </span>
                       </h4>
@@ -223,7 +232,7 @@ export default function ModernDuaKolom({ data }: Props) {
                       <h3 className="font-bold text-slate-900 text-base">
                         {edu.degree}
                       </h3>
-                      <h3 className="text-slate-600 font-medium text-sm">
+                      <h3 className="text-slate-600 font-medium text-sm self-start inline-block" style={entityStyleCSS}>
                         {edu.campus}
                       </h3>
                     </div>

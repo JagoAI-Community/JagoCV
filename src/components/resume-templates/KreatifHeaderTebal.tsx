@@ -16,11 +16,19 @@ export default function KreatifHeaderTebal({ data }: Props) {
   if (data.profile.contact.email) contacts.push({ icon: Mail, value: data.profile.contact.email });
   if (data.profile.contact.phone) contacts.push({ icon: Phone, value: data.profile.contact.phone });
   if (data.profile.contact.location) contacts.push({ icon: MapPin, value: data.profile.contact.location });
-
   const skillsList = Object.entries(data.profile.skills || {}).map(([category, items]) => ({
     category,
     items
   }));
+
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
 
   return (
     <div className="min-h-screen bg-slate-200 py-10 flex justify-center items-start overflow-auto">
@@ -131,7 +139,7 @@ export default function KreatifHeaderTebal({ data }: Props) {
                     
                     <div className="flex justify-between items-start mb-1.5">
                       <h4 className="text-sm font-bold text-gray-900 leading-tight">
-                        {exp.title} <span className="font-normal text-primary-600 px-1">&mdash;</span> {exp.company}
+                        {exp.title} <span className="font-normal text-primary-600 px-1">&mdash;</span> <span className="inline-block" style={entityStyleCSS}>{exp.company}</span>
                       </h4>
                       <span className="bg-primary-600 text-white px-2 py-0.5 rounded text-[11px] shrink-0 font-semibold shadow-sm ml-2">
                         {exp.period}
@@ -204,7 +212,7 @@ export default function KreatifHeaderTebal({ data }: Props) {
                     
                     <div className="flex justify-between items-start">
                       <h3 className="text-sm font-bold text-gray-900 leading-tight">
-                        {edu.degree} <span className="font-normal text-primary-600 px-1">&mdash;</span> {edu.campus}
+                        {edu.degree} <span className="font-normal text-primary-600 px-1">&mdash;</span> <span className="inline-block" style={entityStyleCSS}>{edu.campus}</span>
                       </h3>
                       <div className="flex items-center gap-1.5 ml-3">
                         <span className="bg-primary-600 text-white px-2 py-0.5 rounded text-[11px] shrink-0 font-semibold shadow-sm">

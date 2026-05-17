@@ -11,6 +11,15 @@ interface Props {
 }
 
 export default function KreatifSatuHalaman({ data }: Props) {
+  const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const entityStyleCSS = {
+    fontWeight: entityStyle.isBold ? 'bold' : 'normal',
+    color: entityStyle.color || 'inherit',
+    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    padding: entityStyle.hasBadge ? '2px 6px' : '0',
+    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+  };
+
   return (
     <div className="bg-slate-200 min-h-screen py-10 flex items-center justify-center font-sans tracking-normal overflow-auto">
       {/* 
@@ -125,7 +134,7 @@ export default function KreatifSatuHalaman({ data }: Props) {
                   <div key={i} className="relative border-l-2 border-primary-100 pl-4 mb-3.5">
                     <div className="flex justify-between items-start mb-1">
                       <h4 className="text-[11px] font-semibold text-slate-800 leading-tight">
-                        {exp.title} <span className="font-normal">&mdash; {exp.company}</span>
+                        {exp.title} <span className="font-normal">&mdash; </span><span className="inline-block" style={entityStyleCSS}>{exp.company}</span>
                       </h4>
                       <span className="bg-primary-700 text-white text-[9px] font-medium px-1.5 py-0.5 rounded shrink-0 ml-4">{exp.period}</span>
                     </div>
@@ -176,7 +185,7 @@ export default function KreatifSatuHalaman({ data }: Props) {
                   <div key={i} className="flex justify-between items-center">
                     <div>
                       <h4 className="text-[11px] font-semibold text-slate-800">
-                        {edu.degree} <span className="font-normal">&mdash; {edu.campus}</span>
+                        {edu.degree} <span className="font-normal">&mdash; </span><span className="inline-block" style={entityStyleCSS}>{edu.campus}</span>
                       </h4>
                     </div>
                     <div className="flex gap-1.5 shrink-0">

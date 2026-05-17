@@ -28,7 +28,14 @@ const emptyResumeData: ResumeData = {
   },
   experience: [],
   education: [],
-  projects: []
+  projects: [],
+  design: {
+    entityStyle: {
+      isBold: true,
+      color: '#4F46E5', // Indigo 600
+      hasBadge: false
+    }
+  }
 };
 
 // Dynamically import all templates in the resume-templates folder to scan their metadata
@@ -164,6 +171,19 @@ export default function DesignResumeView() {
 
   const handleProfileChange = (field: keyof ResumeData['profile'], value: string) => {
     setResumeData(prev => ({ ...prev, profile: { ...prev.profile, [field]: value } }));
+  };
+
+  const handleEntityStyleChange = (field: keyof NonNullable<ResumeData['design']>['entityStyle'], value: boolean | string) => {
+    setResumeData(prev => ({
+      ...prev,
+      design: {
+        ...prev.design,
+        entityStyle: {
+          ...(prev.design?.entityStyle || { isBold: true, color: '#4F46E5', hasBadge: false }),
+          [field]: value
+        }
+      }
+    }));
   };
 
   const handleContactChange = (field: keyof ResumeData['profile']['contact'], value: string) => {
@@ -1266,6 +1286,38 @@ export default function DesignResumeView() {
                            </div>
                          );
                        })}
+                     </div>
+                   </div>
+
+                   {/* Entity Style Chooser */}
+                   <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
+                     <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                       Gaya Teks Perusahaan & Kampus
+                     </h4>
+                     <div className="flex flex-col gap-3">
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                         <div className="relative flex items-center justify-center">
+                           <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.isBold ?? true} onChange={(e) => handleEntityStyleChange('isBold', e.target.checked)} />
+                           <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.isBold !== false ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                           <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.isBold !== false ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
+                         </div>
+                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tebalkan Teks (Bold)</span>
+                       </label>
+
+                       <label className="flex items-center gap-3 cursor-pointer group">
+                         <div className="relative flex items-center justify-center">
+                           <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.hasBadge ?? false} onChange={(e) => handleEntityStyleChange('hasBadge', e.target.checked)} />
+                           <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.hasBadge ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                           <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.hasBadge ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
+                         </div>
+                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Gaya Lencana (Badge)</span>
+                       </label>
+
+                       <div className="flex items-center gap-3 mt-1">
+                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Warna Aksen:</label>
+                         <input type="color" value={resumeData.design?.entityStyle?.color || '#4F46E5'} onChange={(e) => handleEntityStyleChange('color', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                       </div>
                      </div>
                    </div>
 
