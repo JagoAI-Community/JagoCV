@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { api } from '../../services/api';
 import { CvFormData } from '../../models/document';
 import { exportToPdf, exportToPng } from '../../utils/export';
+import ResumeViewer from '../ResumeViewer';
+import { mapCvToResumeData } from '../../utils/mapCvToResumeData';
 
 export default function CvResultView() {
   const { idOrSlug } = useParams();
@@ -60,6 +62,9 @@ export default function CvResultView() {
     email: '', 
     phone: '', 
     linkedin: '', 
+    targetRole: '',
+    location: '',
+    portfolio: '',
     summary: '', 
     experiences: [], 
     educations: [], 
@@ -149,120 +154,24 @@ export default function CvResultView() {
             </div>
           </div>
 
-          <div className={`transition-all duration-1000 ${isCompiling ? 'opacity-0 blur-md scale-105' : 'opacity-100 blur-0 scale-100'}`}>
-            <div className="w-full max-w-4xl mx-auto bg-white border border-slate-200 rounded-md shadow-2xl p-8 sm:p-12 text-slate-900 font-sans leading-relaxed text-sm relative" id="cv-document-container">
-              {/* AI Editor Popover */}
-              <div id="ai-edit-popover" className="hidden absolute z-50 bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.2)] border border-indigo-100 w-80 p-4 animate-[zoomIn_0.2s_ease_out]">
-                <div className="flex flex-col relative">
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-t border-l border-indigo-100 transform rotate-45"></div>
-                  <div className="flex items-center gap-2 mb-3 text-indigo-600 font-bold text-sm tracking-tight">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    AI Editor
-                  </div>
-                  <textarea id="ai-edit-prompt" rows={3} placeholder="Beri tahu AI apa yang perlu diubah..." className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-700 outline-none resize-none mb-3 shadow-inner"></textarea>
-                  <div className="flex justify-end gap-2">
-                    <button id="btn-cancel-ai" className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-100">Cancel</button>
-                    <button className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-500 transition-colors flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg> Apply
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* CV Header */}
-              <header className="text-center mb-8 border-b-2 border-slate-900 pb-6 relative group p-4 -m-4 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                <button className="btn-ask-ai absolute -right-4 -top-4 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-indigo-200/50 border border-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-indigo-50 z-10 hover:scale-105">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                  Sempurnakan dengan AI
-                </button>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2 uppercase">{content.fullName}</h1>
-                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-slate-900 font-medium">
-                  <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z"></path></svg> {content.email}</span>
-                  {content.phone && (
-                    <>
-                      <span className="text-slate-400">|</span>
-                      <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg> {content.phone}</span>
-                    </>
-                  )}
-                  {content.linkedin && (
-                    <>
-                      <span className="text-slate-400">|</span>
-                      <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg> {content.linkedin.replace(/^https?:\/\//, '')}</span>
-                    </>
-                  )}
-                </div>
-              </header>
-
-              {/* Ringkasan Profesional */}
-              {content.summary && (
-                <section className="mb-6 relative group p-4 -m-4 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                  <button className="btn-ask-ai absolute -right-4 -top-4 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-indigo-200/50 border border-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-indigo-50 z-10 hover:scale-105">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Sempurnakan dengan AI
-                  </button>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-800 pb-1 mb-3">Ringkasan Profesional</h2>
-                  <p className="text-slate-900 text-justify whitespace-pre-wrap">{content.summary}</p>
-                </section>
-              )}
-
-              {/* Experiences */}
-              {content.experiences && content.experiences.length > 0 && (
-                <section className="mb-6 relative group p-4 -m-4 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                  <button className="btn-ask-ai absolute -right-4 -top-4 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-indigo-200/50 border border-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-indigo-50 z-10 hover:scale-105">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Sempurnakan dengan AI
-                  </button>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-800 pb-1 mb-3">Pengalaman Kerja</h2>
-                  {content.experiences.filter(e => e.company).map((exp, idx) => (
-                    <div key={exp.id || idx} className="mb-5 last:mb-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1">
-                        <h3 className="font-bold text-slate-900 text-base">{exp.company}</h3>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                        <h4 className="font-semibold text-slate-900 italic">{exp.title}</h4>
-                        <span className="text-slate-900 text-sm font-medium">
-                          {exp.startDate ? new Date(exp.startDate).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : ''} &ndash; {exp.isCurrent ? 'Sekarang' : (exp.endDate ? new Date(exp.endDate).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '')}
-                        </span>
-                      </div>
-                      <p className="text-slate-900 text-justify whitespace-pre-wrap pl-2">{exp.description}</p>
-                    </div>
-                  ))}
-                </section>
-              )}
-
-              {/* Education */}
-              {content.educations && content.educations.length > 0 && (
-                <section className="mb-6 relative group p-4 -m-4 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                  <button className="btn-ask-ai absolute -right-4 -top-4 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-indigo-200/50 border border-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-indigo-50 z-10 hover:scale-105">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Sempurnakan dengan AI
-                  </button>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-800 pb-1 mb-3">Pendidikan</h2>
-                  {content.educations.filter(e => e.institution).map((edu, idx) => (
-                    <div key={edu.id || idx} className="mb-4 last:mb-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1">
-                        <h3 className="font-bold text-slate-900 text-base">{edu.institution}</h3>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                        <h4 className="font-semibold text-slate-900 italic">{edu.degree}{edu.fieldOfStudy ? `, ${edu.fieldOfStudy}` : ''}</h4>
-                        <span className="text-slate-900 text-sm font-medium">{edu.startYear} &ndash; {edu.endYear || 'Sekarang'}</span>
-                      </div>
-                    </div>
-                  ))}
-                </section>
-              )}
-
-              {/* Skills */}
-              {content.skills && (
-                <section className="relative group p-4 -m-4 rounded-xl border border-transparent hover:border-indigo-100 hover:bg-indigo-50/30 transition-all cursor-pointer">
-                  <button className="btn-ask-ai absolute -right-4 -top-4 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-indigo-200/50 border border-indigo-100 text-indigo-600 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-indigo-50 z-10 hover:scale-105">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    Sempurnakan dengan AI
-                  </button>
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-slate-900 border-b border-slate-800 pb-1 mb-3">Keahlian</h2>
-                  <p className="text-slate-900 whitespace-pre-wrap">{content.skills}</p>
-                </section>
-              )}
+          <div className={`transition-all duration-1000 ${isCompiling ? 'opacity-0 blur-md scale-105' : 'opacity-100 blur-0 scale-100'} w-full overflow-x-auto py-2 hide-scrollbar flex justify-center`}>
+            <div 
+              id="cv-document-container"
+              className="bg-white shadow-2xl relative w-[794px] min-h-[1123px] overflow-hidden rounded-xl shrink-0"
+              style={{ 
+                width: '794px', 
+                height: '1123px', 
+                minWidth: '794px', 
+                minHeight: '1123px',
+                fontFamily: doc?.fontFamily || 'Inter' 
+              }}
+            >
+              {/* Live CV Viewer */}
+              <ResumeViewer 
+                templateId={doc?.templateId || 'AtsCompact'} 
+                data={mapCvToResumeData(content, false)} 
+                fontFamily={doc?.fontFamily || 'Inter'} 
+              />
             </div>
           </div>
         </div>

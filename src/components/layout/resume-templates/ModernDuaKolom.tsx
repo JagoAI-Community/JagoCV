@@ -36,8 +36,7 @@ export default function ModernDuaKolom({ data }: Props) {
   return (
     <div style={themeStyle} className="min-h-screen bg-slate-200 py-10 flex justify-center items-start overflow-auto">
       {/* Container A4 Page */}
-      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row overflow-hidden text-sm transform origin-top md:scale-100 scale-75"
-        style={{ boxSizing: "border-box" }}
+      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px', boxSizing: "border-box" } as React.CSSProperties} className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row overflow-hidden text-sm transform origin-top md:scale-100 scale-75"
       >
         {/* Konten Kiri (Sidebar) */}
         <aside className="w-1/3 bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-8 flex flex-col gap-8">

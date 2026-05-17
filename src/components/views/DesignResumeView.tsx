@@ -42,7 +42,7 @@ const emptyResumeData: ResumeData = {
 };
 
 // Dynamically import all templates in the resume-templates folder to scan their metadata
-const templates = (import.meta as any).glob('../resume-templates/*.tsx', { eager: true });
+const templates = (import.meta as any).glob('../layout/resume-templates/*.tsx', { eager: true });
 
 const LAYOUTS_LIST = Object.entries(templates).map(([path, module]: any) => {
   const id = path.split('/').pop()?.replace('.tsx', '') || '';
@@ -1420,7 +1420,7 @@ export default function DesignResumeView() {
                       fontFamily: fontFamily
                     }}
                   >
-                    <ResumeViewer templateId={templateId} data={resumeData} />
+                    <ResumeViewer templateId={templateId} data={resumeData} fontFamily={fontFamily} />
                   </div>
                 </div>
              </div>
@@ -1432,32 +1432,51 @@ export default function DesignResumeView() {
         
         {/* 1. Exit Warning Modal */}
         {showExitModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#0B1221] rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800 p-6 animate-[zoomIn_0.2s_ease_out]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Keluar dari Editor?</h3>
-                <button onClick={() => setShowExitModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div onClick={() => setShowExitModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+            
+            {/* Modal Content */}
+            <div className="relative w-full max-w-md bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-6 z-10 animate-[scaleIn_0.2s_ease_forwards]">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
-                Perubahan Anda mungkin belum tersimpan. Apakah Anda ingin menyimpan sebelum keluar ke dasbor?
+              
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Simpan Perubahan Anda?</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                Anda sedang keluar dari editor Resume. Apakah Anda ingin menyimpan draf pekerjaan Anda saat ini agar tidak hilang?
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
+              
+              <div className="flex flex-col gap-2.5">
                 <button 
-                  onClick={() => navigate('/dashboard')}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors"
+                  type="button"
+                  onClick={async () => {
+                    setShowExitModal(false);
+                    await handleSaveDocument('DRAF');
+                  }} 
+                  disabled={isSaving}
+                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-indigo-500/20 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  {isSaving ? 'Menyimpan...' : 'Simpan ke Draf & Keluar'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowExitModal(false);
+                    navigate('/dashboard');
+                  }} 
+                  className="w-full py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 rounded-xl font-bold text-sm transition-colors cursor-pointer"
                 >
                   Keluar Tanpa Menyimpan
                 </button>
                 <button 
-                  onClick={() => {
-                    handleSaveDocument('DRAF');
-                  }}
-                  disabled={isSaving}
-                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2"
+                  type="button"
+                  onClick={() => setShowExitModal(false)} 
+                  className="w-full py-3 bg-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl font-semibold text-sm transition-colors cursor-pointer"
                 >
-                  {isSaving ? 'Menyimpan...' : 'Simpan & Keluar'}
+                  Batal
                 </button>
               </div>
             </div>
@@ -1478,7 +1497,7 @@ export default function DesignResumeView() {
                 className="bg-white shadow-2xl relative w-[210mm] min-h-[297mm] transform origin-top md:scale-100 scale-[0.6] sm:scale-75"
                 style={{ fontFamily: fontFamily }}
               >
-                <ResumeViewer templateId={templateId} data={resumeData} />
+                <ResumeViewer templateId={templateId} data={resumeData} fontFamily={fontFamily} />
               </div>
             </div>
           </div>

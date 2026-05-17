@@ -35,6 +35,7 @@ export interface ResumeData {
   }[];
   availability?: string;
   design?: {
+    language?: string;
     entityStyle?: {
       isBold: boolean;
       color: string;

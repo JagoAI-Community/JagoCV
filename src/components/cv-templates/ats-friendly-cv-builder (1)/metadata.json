@@ -1,6 +1,0 @@
-{
-  "name": "ATS-Friendly CV Builder",
-  "description": "A professional, minimalist, and ATS-friendly Curriculum Vitae template using React and Tailwind CSS.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

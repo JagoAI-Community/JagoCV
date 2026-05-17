@@ -17,6 +17,7 @@ export interface CvFormData {
   educations: Education[];
   skills: string;
   photoUrl?: string;
+  language?: 'id' | 'en';
 }
 
 // ===================================================================

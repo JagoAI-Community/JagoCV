@@ -1,16 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// Dynamically import all templates in the resume-templates folder to scan their metadata
-const templates = (import.meta as any).glob('../resume-templates/*.tsx', { eager: true });
-
-const LAYOUTS = Object.entries(templates).map(([path, module]: any) => {
-  const id = path.split('/').pop()?.replace('.tsx', '') || '';
-  return {
-    value: id,
-    label: module.metadata?.name || id,
-    desc: module.metadata?.desc || 'Desain layout resume premium.'
-  };
-});
+// Dynamically import all templates
+const resumeTemplates = (import.meta as any).glob('../layout/resume-templates/*.tsx', { eager: true });
+const cvAtsTemplates = (import.meta as any).glob('../layout/cv-ats-templates/*.tsx', { eager: true });
 
 const FONTS = [
   { value: "Inter", label: "Inter", desc: "Modern & Bersih" },
@@ -34,14 +26,35 @@ const LayoutPreview = ({ value }: { value: string }) => {
 
 export const LayoutSelection = ({
   theme = "blue",
-  stepNumber = 5
+  stepNumber = 5,
+  templateType = "resume",
+  onChange
 }: {
   theme?: "blue" | "indigo" | "cyan",
-  stepNumber?: number | string
+  stepNumber?: number | string,
+  templateType?: "resume" | "cv",
+  onChange?: (layoutId: string, fontId: string) => void
 }) => {
   const t = theme === "indigo" ? "indigo" : theme === "cyan" ? "cyan" : "blue";
-  const [selectedLayout, setSelectedLayout] = useState(LAYOUTS[0]?.value || "");
+  
+  const templates = templateType === "cv" ? cvAtsTemplates : resumeTemplates;
+  const LAYOUTS = Object.entries(templates).map(([path, module]: any) => {
+    const id = path.split('/').pop()?.replace('.tsx', '') || '';
+    return {
+      value: id,
+      label: module.metadata?.name || id,
+      desc: module.metadata?.desc || 'Desain layout premium.'
+    };
+  });
+
+  const defaultLayout = templateType === "cv" ? "AtsCompact" : (LAYOUTS[0]?.value || "");
+  const [selectedLayout, setSelectedLayout] = useState(defaultLayout);
   const [selectedFont, setSelectedFont] = useState(FONTS[0]?.value || "Inter");
+
+  // Call onChange initially if provided
+  useEffect(() => {
+    if (onChange) onChange(selectedLayout, selectedFont);
+  }, [selectedLayout, selectedFont, onChange]);
 
   return (
     <div className="rounded-[24px] p-6 border border-slate-200 dark:border-[#2A3143] bg-transparent flex flex-col mt-6 space-y-8">

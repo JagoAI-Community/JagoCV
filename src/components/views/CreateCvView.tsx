@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LayoutSelection } from './LayoutSelection';
 import { useWizard } from '../../controllers/useWizard';
 import { useAuth } from '../../controllers/useAuth';
 import { api } from '../../services/api';
 import { CvFormData, createEmptyExperience, createEmptyEducation } from '../../models/document';
+import ResumeViewer from '../ResumeViewer';
+import { mapCvToResumeData } from '../../utils/mapCvToResumeData';
 
 export default function CreateCvView() {
   const navigate = useNavigate();
@@ -15,6 +17,36 @@ export default function CreateCvView() {
   const [aiStep, setAiStep] = useState(1);
   const { currentStep, nextStep, prevStep } = useWizard(1, 5);
   const [isSaving, setIsSaving] = useState(false);
+  const [showLayoutSelection, setShowLayoutSelection] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('AtsCompact');
+  const [selectedFont, setSelectedFont] = useState('Inter');
+  const [showExitModal, setShowExitModal] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.5);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.getBoundingClientRect().width;
+        const calculatedScale = (containerWidth - 48) / 794;
+        setScale(Math.max(0.2, Math.min(1.2, calculatedScale)));
+      }
+    };
+
+    updateScale();
+
+    const observer = new ResizeObserver(() => {
+      updateScale();
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const [formData, setFormData] = useState<CvFormData>({
     fullName: '',
@@ -56,9 +88,17 @@ export default function CreateCvView() {
       const fetchDoc = async () => {
         try {
           const data = await api.getDocument(id);
-          setDoc(data);
-          if (data && data.content) {
-            setFormData(data.content as CvFormData);
+          if (data) {
+            setDoc(data);
+            if (data.content) {
+              setFormData(data.content as CvFormData);
+            }
+            if (data.templateId) {
+              setSelectedTemplateId(data.templateId);
+            }
+            if (data.fontFamily) {
+              setSelectedFont(data.fontFamily);
+            }
           }
         } catch (err) {
           console.error("Gagal memuat dokumen:", err);
@@ -95,7 +135,8 @@ export default function CreateCvView() {
         type: 'ATS_CV',
         content: formData as any,
         status,
-        templateId: 'modern-ats',
+        templateId: selectedTemplateId,
+        fontFamily: selectedFont,
         isAiGenerated: isAiMode // Pass flag to backend
       };
 
@@ -145,10 +186,14 @@ export default function CreateCvView() {
       </div>
 
       {/* Back Link */}
-      <Link to="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors mb-6 group w-fit">
+      <button 
+        type="button"
+        onClick={() => setShowExitModal(true)} 
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors mb-6 group w-fit cursor-pointer"
+      >
         <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         Kembali ke Dasbor
-      </Link>
+      </button>
 
         {/* Builder Header */}
         <header className="mb-8 pb-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -169,8 +214,94 @@ export default function CreateCvView() {
           {/* Left Col: Form & Wizard */}
           <div className="w-full lg:w-1/2 space-y-6 flex flex-col">
             
-            {/* Form Inputs Container */}
-            <div className="w-full space-y-6">
+            {/* Kustomisasi Layout & Desain Toggle Button */}
+            <div className="flex items-center gap-3">
+              <button 
+                type="button"
+                onClick={() => setShowLayoutSelection(!showLayoutSelection)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-[0.98] cursor-pointer border ${
+                  showLayoutSelection 
+                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20 active:scale-95' 
+                    : 'bg-white dark:bg-[#1A2133] hover:bg-slate-100 dark:hover:bg-[#2A3143] text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50 shadow-sm'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                {showLayoutSelection ? '← Kembali ke Form Input' : 'Pilih Layout & Kustomisasi Gaya'}
+              </button>
+            </div>
+
+            {showLayoutSelection ? (
+              /* PANEL KUSTOMISASI DESAIN LAYOUT (LEFT SIDE) */
+              <div className="w-full bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-[#2A3143] rounded-[24px] p-6 md:p-8 flex flex-col gap-6 shadow-xl dark:shadow-none animate-[fadeIn_0.3s_ease_forwards]">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#2A3143] pb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                      Kustomisasi Layout & Gaya CV
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih desain template ATS terbaik dan sesuaikan font pilihan Anda</p>
+                  </div>
+                </div>
+
+                <LayoutSelection 
+                  theme="blue" 
+                  stepNumber="⭐" 
+                  templateType="cv" 
+                  onChange={(layoutId, fontId) => {
+                    setSelectedTemplateId(layoutId);
+                    setSelectedFont(fontId);
+                  }}
+                />
+
+                {/* Bahasa Dokumen (Language Toggle) */}
+                <div className="border-t border-slate-200 dark:border-[#2A3143] pt-6 mt-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 11.37 7.31 16.142 2 17.728"></path></svg>
+                    Bahasa Dokumen (Language)
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                    Ubah seluruh teks header dan sub-header CV Anda ke bahasa pilihan.
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => updateField('language', 'id')}
+                      className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center justify-center gap-2 ${
+                        (formData.language || 'id') === 'id'
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02]'
+                          : 'bg-white dark:bg-[#1A2133] border-slate-200 dark:border-[#2A3143] text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      🇮🇩 Bahasa Indonesia
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateField('language', 'en')}
+                      className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all border cursor-pointer flex items-center justify-center gap-2 ${
+                        formData.language === 'en'
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/25 scale-[1.02]'
+                          : 'bg-white dark:bg-[#1A2133] border-slate-200 dark:border-[#2A3143] text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      🇬🇧 English (US)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-[#2A3143]">
+                  <button 
+                    type="button"
+                    onClick={() => setShowLayoutSelection(false)} 
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20 cursor-pointer flex items-center gap-2 active:scale-95"
+                  >
+                    Selesai & Terapkan
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+              {/* Form Inputs Container */}
+              <div className="w-full space-y-6">
             
                         {/* Wizard Progress Animation */}
             <div id="cv-wizard-progress" className="w-full mb-8 pt-4">
@@ -385,13 +516,19 @@ export default function CreateCvView() {
                         <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Bidang Studi</label>
                         <input type="text" value={edu.fieldOfStudy} onChange={e => { const updated = [...formData.educations]; updated[idx].fieldOfStudy = e.target.value; updateField('educations', updated); }} placeholder="Informatika" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
                       </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Mulai</label>
-                        <input type="text" value={edu.startYear} onChange={e => { const updated = [...formData.educations]; updated[idx].startYear = e.target.value; updateField('educations', updated); }} placeholder="2018" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Lulus</label>
-                        <input type="text" value={edu.endYear} onChange={e => { const updated = [...formData.educations]; updated[idx].endYear = e.target.value; updateField('educations', updated); }} placeholder="2022" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                      <div className="grid grid-cols-3 gap-4 md:col-span-2">
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Mulai</label>
+                          <input type="text" value={edu.startYear} onChange={e => { const updated = [...formData.educations]; updated[idx].startYear = e.target.value; updateField('educations', updated); }} placeholder="2018" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tahun Lulus</label>
+                          <input type="text" value={edu.endYear} onChange={e => { const updated = [...formData.educations]; updated[idx].endYear = e.target.value; updateField('educations', updated); }} placeholder="2022" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">IPK / GPA</label>
+                          <input type="text" value={edu.gpa || ''} onChange={e => { const updated = [...formData.educations]; updated[idx].gpa = e.target.value; updateField('educations', updated); }} placeholder="3.80" className="w-full bg-white dark:bg-[#1A2133] border border-slate-300 dark:border-[#2A3143] rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-600 focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF] outline-none transition-all" />
+                        </div>
                       </div>
                    </div>
                 </div>
@@ -416,7 +553,7 @@ export default function CreateCvView() {
               </div>
               <div className="flex justify-between mt-8 pt-6 border-t border-slate-100 dark:border-[#2A3143]">
                  <button type="button" onClick={prevStep} className="bg-slate-100 dark:bg-[#1A2133] hover:bg-slate-200 dark:hover:bg-[#2A3143] text-slate-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 active:scale-95"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg> Sebelumnya</button>
-                 <button type="button" onClick={nextStep} className="bg-[#1E5EFF] hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2 active:scale-95">Pilih Layout <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
+                 <button type="button" onClick={nextStep} className="bg-[#1E5EFF] hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/25 flex items-center gap-2 active:scale-95">Selesai dan Simpan <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg></button>
               </div>
             </div> 
             )}
@@ -520,11 +657,9 @@ export default function CreateCvView() {
               </div>
             </div>
             )} {/* END CONTAINER: AI MAGIC STORY */}
-
-          </div>
-
-
-
+            </div>
+          </>
+        )}
           </div> {/* End Left Col Container */}
 
           {/* Right Col: Live Preview */}
@@ -538,117 +673,83 @@ export default function CreateCvView() {
                 </span>
              </div>
              
-             {/* Document Container */}
-             <div className="bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none min-h-[600px] flex flex-col">
-               
-               {/* Live Preview State */}
-               <div className="flex flex-col gap-6 font-sans">
-                 
-                 {/* Auto-Sort Badge */}
-                 <div className="flex justify-end">
-                   <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-md">
-                     <svg className="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
-                     <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">Terurut Otomatis (Terbaru di Atas)</span>
-                   </div>
-                 </div>
-                 
-                 {/* Header */}
-                 <div className="flex flex-col items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-6 text-center">
-                    {formData.photoUrl && (
-                      <img src={formData.photoUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover mb-2 border-2 border-[#1E5EFF]" />
-                    )}
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-wider">{formData.fullName || 'NAMA LENGKAP'}</h1>
-                   <p className="text-sm font-semibold text-[#1E5EFF]">{formData.targetRole || 'Peran Target'}</p>
-                   <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-2 text-[11px] text-slate-600 dark:text-slate-400">
-                     {formData.email && <span>{formData.email}</span>}
-                     {formData.phone && <span>• {formData.phone}</span>}
-                     {formData.location && <span>• {formData.location}</span>}
-                     {formData.linkedin && <span>• {formData.linkedin.replace('https://', '')}</span>}
-                     {formData.portfolio && <span>• {formData.portfolio.replace('https://', '')}</span>}
-                   </div>
-                 </div>
-
-                 {/* Summary */}
-                 {formData.summary && (
-                   <div>
-                     <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-1 mb-3">Ringkasan</h3>
-                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed text-justify whitespace-pre-wrap">{formData.summary}</p>
-                   </div>
-                 )}
-
-                 {/* Experience */}
-                 {formData.experiences.some(e => e.company || e.title) && (
-                   <div>
-                     <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-1 mb-4">Pengalaman Kerja</h3>
-                     <div className="space-y-5">
-                        {[...formData.experiences]
-                          .filter(e => e.company || e.title)
-                          .sort((a, b) => {
-                            if (a.isCurrent && !b.isCurrent) return -1;
-                            if (!a.isCurrent && b.isCurrent) return 1;
-                            const dateA = a.endDate || a.startDate || '';
-                            const dateB = b.endDate || b.startDate || '';
-                            return dateB.localeCompare(dateA);
-                          })
-                          .map((exp, i) => (
-                         <div key={exp.id || i}>
-                           <div className="flex justify-between items-start mb-1.5">
-                             <div className="flex flex-col">
-                               <span className="text-sm font-bold text-slate-900 dark:text-white">{exp.title || 'Jabatan'}</span>
-                               <span className="text-xs font-medium text-[#1E5EFF]">{exp.company || 'Nama Perusahaan'}</span>
-                             </div>
-                             <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
-                               {exp.startDate ? new Date(exp.startDate).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : 'Mulai'} - {exp.isCurrent ? 'Sekarang' : (exp.endDate ? new Date(exp.endDate).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : 'Selesai')}
-                             </span>
-                           </div>
-                           <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap ml-3 pl-3 border-l-2 border-slate-200 dark:border-slate-800">{exp.description || 'Deskripsi pekerjaan dan pencapaian akan tampil di sini.'}</p>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-
-                 {/* Education */}
-                 {formData.educations.some(e => e.institution || e.degree) && (
-                   <div>
-                     <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-1 mb-4">Pendidikan</h3>
-                     <div className="space-y-4">
-                        {[...formData.educations]
-                          .filter(e => e.institution || e.degree)
-                          .sort((a, b) => {
-                            const dateA = a.endYear || a.startYear || '';
-                            const dateB = b.endYear || b.startYear || '';
-                            return dateB.localeCompare(dateA);
-                          })
-                          .map((edu, i) => (
-                         <div key={edu.id || i} className="flex justify-between items-start">
-                           <div className="flex flex-col">
-                             <span className="text-sm font-bold text-slate-900 dark:text-white">{edu.institution || 'Nama Institusi'}</span>
-                             <span className="text-xs text-slate-600 dark:text-slate-400">{edu.degree || 'Gelar'}{edu.fieldOfStudy ? `, ${edu.fieldOfStudy}` : ''}</span>
-                           </div>
-                           <span className="text-[11px] font-medium text-slate-500">
-                             {edu.startYear || 'Tahun'} - {edu.endYear || 'Tahun'}
-                           </span>
-                         </div>
-                       ))}
-                     </div>
-                   </div>
-                 )}
-
-                 {/* Skills */}
-                 {formData.skills && (
-                   <div>
-                     <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-1 mb-3">Keterampilan</h3>
-                     <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{formData.skills}</p>
-                   </div>
-                 )}
-
+             {/* Document Container with Auto-Fit Scaling */}
+             <div 
+               ref={containerRef}
+               className="bg-slate-900/5 dark:bg-black/20 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 flex items-center justify-center overflow-hidden min-h-[600px] relative w-full"
+             >
+               <div 
+                 style={{ 
+                   transform: `scale(${scale})`, 
+                   transformOrigin: 'center center',
+                   width: '794px',
+                   height: '1123px',
+                   flexShrink: 0
+                 }}
+                 className="bg-white dark:bg-[#0B1221] shadow-2xl rounded-sm transition-all duration-300 overflow-hidden"
+               >
+                 <ResumeViewer 
+                   templateId={selectedTemplateId} 
+                   data={mapCvToResumeData(formData, true)} 
+                   fontFamily={selectedFont} 
+                 />
                </div>
-
              </div>
           </div>
 
         </div>
+
+        {/* 2. EXIT WARNING DIALOG */}
+        {showExitModal && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div onClick={() => setShowExitModal(false)} className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+            
+            {/* Modal Content */}
+            <div className="relative w-full max-w-md bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-6 z-10 animate-[scaleIn_0.2s_ease_forwards]">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-4">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Simpan Perubahan Anda?</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                Anda sedang keluar dari editor CV. Apakah Anda ingin menyimpan draf pekerjaan Anda saat ini agar tidak hilang?
+              </p>
+              
+              <div className="flex flex-col gap-2.5">
+                <button 
+                  type="button"
+                  onClick={async () => {
+                    setShowExitModal(false);
+                    await handleSaveDocument('DRAF');
+                  }} 
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20 cursor-pointer"
+                >
+                  Simpan ke Draf & Keluar
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setShowExitModal(false);
+                    navigate('/dashboard');
+                  }} 
+                  className="w-full py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm transition-colors cursor-pointer"
+                >
+                  Keluar Tanpa Menyimpan
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowExitModal(false)} 
+                  className="w-full py-3 bg-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
   );

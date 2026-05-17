@@ -1,6 +1,0 @@
-{
-  "name": "ATS-Friendly CV",
-  "description": "Minimalist ATS-friendly CV template with a clean layout, ready for printing or PDF export.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

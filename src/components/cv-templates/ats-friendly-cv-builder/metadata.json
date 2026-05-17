@@ -1,8 +1,0 @@
-{
-  "name": "ATS-Friendly CV Builder",
-  "description": "Profesional ATS-friendly CV template for Shafnat Ramadhan",
-  "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
-}
