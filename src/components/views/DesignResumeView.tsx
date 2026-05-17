@@ -33,7 +33,10 @@ const emptyResumeData: ResumeData = {
     entityStyle: {
       isBold: true,
       color: '#4F46E5', // Indigo 600
-      hasBadge: false
+      hasBadge: false,
+      badgeBgColor: '#E0E7FF',
+      badgeTextColor: '#4F46E5',
+      badgeBorderRadius: '4px'
     }
   }
 };
@@ -180,6 +183,19 @@ export default function DesignResumeView() {
         ...prev.design,
         entityStyle: {
           ...(prev.design?.entityStyle || { isBold: true, color: '#4F46E5', hasBadge: false }),
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const handleThemeChange = (field: keyof NonNullable<ResumeData['design']>['theme'], value: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      design: {
+        ...prev.design,
+        theme: {
+          ...(prev.design?.theme || { sidebarBg: '#2563EB', sidebarText: '#FFFFFF', accent: '#4F46E5' }),
           [field]: value
         }
       }
@@ -487,14 +503,207 @@ export default function DesignResumeView() {
           {/* Left Col: Form Inputs */}
           <div className="w-full lg:w-1/2 space-y-6 flex flex-col">
             
-            {/* Input Mode Toggle (Resume) */}
-            <div className="rounded-[16px] p-1.5 border border-slate-200 dark:border-[#2A3143] bg-transparent flex items-center mb-2 bg-white/80 dark:bg-[#0B1221]/80">
-              <button onClick={() => setIsAiMode(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isAiMode ? 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white'}`}>Form Manual</button>
-              <button onClick={() => setIsAiMode(true)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 group ${isAiMode ? 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white'}`}>
-                <svg className={`w-4 h-4 group-hover:animate-pulse ${isAiMode ? 'text-white' : 'text-indigo-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                Arsitek Desain AI
+            {/* Kustomisasi Layout & Desain Toggle Button */}
+            <div className="flex items-center gap-3">
+              <button 
+                type="button"
+                onClick={() => setShowLayoutSelection(!showLayoutSelection)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl text-xs sm:text-sm font-bold transition-all active:scale-[0.98] cursor-pointer border ${
+                  showLayoutSelection 
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/30' 
+                    : 'bg-white dark:bg-[#1A2133] hover:bg-slate-100 dark:hover:bg-[#2A3143] text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/50 shadow-sm'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                {showLayoutSelection ? '← Kembali ke Form Input' : 'Pilih Layout & Kustomisasi Gaya'}
               </button>
             </div>
+
+            {showLayoutSelection ? (
+              /* PANEL KUSTOMISASI DESAIN LAYOUT (LEFT SIDE) */
+              <div 
+                className="w-full bg-white dark:bg-[#0B1221] border border-slate-200 dark:border-slate-800 rounded-3xl p-5 md:p-6 overflow-y-auto hide-scrollbar flex flex-col gap-6 shadow-xl shadow-slate-100/50 dark:shadow-none animate-[fadeIn_0.3s_ease_forwards]"
+              >
+                <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
+                  <h4 className="text-sm font-bold text-slate-850 dark:text-white mb-1 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Pilih Template Desain Layout
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Pilih dari koleksi layout premium kami. Perubahan layout resume Anda akan ter-render secara instan di pratinjau live sebelah kanan.
+                  </p>
+                </div>
+
+                {/* Grid Layouts */}
+                <div className="grid grid-cols-1 gap-3">
+                  {LAYOUTS_LIST.map((layout) => {
+                    const isActive = templateId === layout.id;
+                    return (
+                      <div
+                        key={layout.id}
+                        onClick={() => setTemplateId(layout.id)}
+                        className={`relative flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] ${
+                          isActive
+                            ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-500/10 shadow-sm'
+                            : 'border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* Mini Layout Icon */}
+                          <div className={`w-8 h-11 rounded border flex flex-col gap-1 p-1 overflow-hidden shrink-0 transition-colors ${
+                            isActive ? 'bg-indigo-500/20 border-indigo-400 text-indigo-400' : 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-850 text-slate-450'
+                          }`}>
+                            <div className="w-2/3 h-0.5 bg-current opacity-60 rounded-sm mx-auto"></div>
+                            <div className="w-1/2 h-[0.5px] bg-current opacity-40 rounded-sm mx-auto"></div>
+                            <div className="w-full h-[0.5px] bg-current opacity-25 rounded-sm mt-0.5"></div>
+                            <div className="w-4/5 h-[0.5px] bg-current opacity-25 rounded-sm"></div>
+                            <div className="w-full h-[0.5px] bg-current opacity-25 rounded-sm"></div>
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">{layout.name}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed pr-2">{layout.desc}</p>
+                          </div>
+                        </div>
+                        
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                          isActive ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300 dark:border-slate-700'
+                        }`}>
+                          {isActive && <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Font Chooser */}
+                <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    Pilih Tipografi Font
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {FONTS_LIST.map((font) => {
+                      const isActive = fontFamily === font.id;
+                      return (
+                        <div
+                          key={font.id}
+                          onClick={() => setFontFamily(font.id)}
+                          className={`flex flex-col items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-[0.99] ${
+                            isActive
+                              ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-500/10 shadow-sm'
+                              : 'border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-transparent'
+                          }`}
+                        >
+                          <span className="text-lg font-extrabold text-slate-900 dark:text-white mb-0.5" style={{ fontFamily: font.id }}>
+                            Aa
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{font.name}</span>
+                          <span className="text-[9px] text-slate-400 mt-0.5">{font.desc}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Entity Style Chooser */}
+                <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    Gaya Teks Perusahaan & Kampus
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.isBold ?? true} onChange={(e) => handleEntityStyleChange('isBold', e.target.checked)} />
+                        <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.isBold !== false ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                        <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.isBold !== false ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tebalkan Teks (Bold)</span>
+                    </label>
+
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center">
+                        <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.hasBadge ?? false} onChange={(e) => handleEntityStyleChange('hasBadge', e.target.checked)} />
+                        <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.hasBadge ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
+                        <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.hasBadge ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
+                      </div>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Gaya Lencana (Badge)</span>
+                    </label>
+
+                    {(resumeData.design?.entityStyle?.hasBadge) && (
+                      <div className="pl-6 border-l-2 border-indigo-500/30 flex flex-col gap-3 py-1.5 animate-[fadeIn_0.2s_ease_forwards]">
+                        <div className="flex items-center gap-3">
+                          <label className="text-xs font-semibold text-slate-650 dark:text-slate-400 min-w-[125px]">Latar Lencana:</label>
+                          <input type="color" value={resumeData.design?.entityStyle?.badgeBgColor || '#E0E7FF'} onChange={(e) => handleEntityStyleChange('badgeBgColor', e.target.value)} className="w-7 h-7 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="text-xs font-semibold text-slate-650 dark:text-slate-400 min-w-[125px]">Teks Lencana:</label>
+                          <input type="color" value={resumeData.design?.entityStyle?.badgeTextColor || '#4F46E5'} onChange={(e) => handleEntityStyleChange('badgeTextColor', e.target.value)} className="w-7 h-7 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="text-xs font-semibold text-slate-650 dark:text-slate-400 min-w-[125px]">Kelengkungan Sudut:</label>
+                          <select 
+                            value={resumeData.design?.entityStyle?.badgeBorderRadius || '4px'} 
+                            onChange={(e) => handleEntityStyleChange('badgeBorderRadius', e.target.value)}
+                            className="bg-white dark:bg-[#1A2133] border border-slate-350 dark:border-[#2A3143] rounded-lg px-2.5 py-1 text-xs text-slate-800 dark:text-slate-200 outline-none transition-all cursor-pointer"
+                          >
+                            <option value="0px">Siku (None)</option>
+                            <option value="4px">Bulat Tipis (Rounded)</option>
+                            <option value="8px">Medium (MD)</option>
+                            <option value="9999px">Lonjong (Full)</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3 mt-1">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Warna Teks Kampus/Perusahaan:</label>
+                      <input type="color" value={resumeData.design?.entityStyle?.color || '#4F46E5'} onChange={(e) => handleEntityStyleChange('color', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tema Keseluruhan */}
+                <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    Kustomisasi Warna Tema Resume
+                  </h4>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[120px]">Latar Utama/Sidebar:</label>
+                      <input type="color" value={resumeData.design?.theme?.sidebarBg || '#2563EB'} onChange={(e) => handleThemeChange('sidebarBg', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[120px]">Warna Aksen:</label>
+                      <input type="color" value={resumeData.design?.theme?.accent || '#4F46E5'} onChange={(e) => handleThemeChange('accent', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 min-w-[120px]">Teks Utama/Sidebar:</label>
+                      <input type="color" value={resumeData.design?.theme?.sidebarText || '#FFFFFF'} onChange={(e) => handleThemeChange('sidebarText', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Apply Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowLayoutSelection(false)}
+                  className="w-full mt-auto py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 shrink-0 cursor-pointer"
+                >
+                  Terapkan & Kembali Isi Data
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Input Mode Toggle (Resume) */}
+                <div className="rounded-[16px] p-1.5 border border-slate-200 dark:border-[#2A3143] bg-transparent flex items-center mb-2 bg-white/80 dark:bg-[#0B1221]/80">
+                  <button onClick={() => setIsAiMode(false)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${!isAiMode ? 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white'}`}>Form Manual</button>
+                  <button onClick={() => setIsAiMode(true)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 group ${isAiMode ? 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)] text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white'}`}>
+                    <svg className={`w-4 h-4 group-hover:animate-pulse ${isAiMode ? 'text-white' : 'text-indigo-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Arsitek Desain AI
+                  </button>
+                </div>
 
             {/* CONTAINER: MANUAL FORMS (RESUME) */}
             {!isAiMode && (
@@ -1165,32 +1374,16 @@ export default function DesignResumeView() {
               </div>
             </div>
             )} {/* END CONTAINER: AI MAGIC STORY (RESUME) */}
+            </>
+            )}
           </div> {/* End Left Col Container */}
           {/* Right Col: Live Preview */}
-          <div className="w-full lg:w-1/2 lg:sticky lg:top-6 flex flex-col gap-4">
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-6 flex flex-col gap-4 max-h-[calc(100vh-3rem)] overflow-y-auto hide-scrollbar pb-10">
              <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                    Pratinjau Live
                 </h3>
                 <div className="flex items-center gap-2">
-                   <button 
-                     type="button"
-                     onClick={() => setShowLayoutSelection(!showLayoutSelection)}
-                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer border ${
-                       showLayoutSelection 
-                         ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 shadow-md shadow-indigo-600/20' 
-                         : 'bg-white dark:bg-[#1A2133] hover:bg-slate-100 dark:hover:bg-[#2A3143] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800'
-                     }`}
-                   >
-                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       {showLayoutSelection ? (
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                       ) : (
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                       )}
-                     </svg>
-                     {showLayoutSelection ? 'Lihat Pratinjau' : 'Pilih Layout'}
-                   </button>
                    <span className="px-2.5 py-1.5 bg-green-150 text-green-700 dark:bg-green-500/20 dark:text-green-400 text-[10px] font-bold rounded-full uppercase tracking-widest flex items-center gap-1.5">
                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-ping"></span>
                      Auto-Sync
@@ -1203,162 +1396,33 @@ export default function DesignResumeView() {
                ref={containerRef}
                className="bg-slate-100 dark:bg-[#070B19]/40 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-2 md:p-3 shadow-xl shadow-slate-200/40 dark:shadow-none flex flex-col items-center w-full overflow-hidden hide-scrollbar"
              >
-               {showLayoutSelection ? (
-                 <div 
-                   className="w-full bg-white dark:bg-[#0B1221] rounded-xl p-5 md:p-6 overflow-y-auto hide-scrollbar flex flex-col gap-6"
-                   style={{ height: `${1123 * scale}px` }}
-                 >
-                   <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-                     <h4 className="text-sm font-bold text-slate-850 dark:text-white mb-1 flex items-center gap-2">
-                       <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                       Pilih Template Desain Layout
-                     </h4>
-                     <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                       Pilih dari koleksi layout premium kami. Perubahan layout resume Anda akan ter-render secara instan di pratinjau live.
-                     </p>
-                   </div>
-
-                   {/* Grid Layouts */}
-                   <div className="grid grid-cols-1 gap-3">
-                     {LAYOUTS_LIST.map((layout) => {
-                       const isActive = templateId === layout.id;
-                       return (
-                         <div
-                           key={layout.id}
-                           onClick={() => setTemplateId(layout.id)}
-                           className={`relative flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] ${
-                             isActive
-                               ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-500/10 shadow-sm'
-                               : 'border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-transparent'
-                           }`}
-                         >
-                           <div className="flex items-center gap-3">
-                             {/* Mini Layout Icon */}
-                             <div className={`w-8 h-11 rounded border flex flex-col gap-1 p-1 overflow-hidden shrink-0 transition-colors ${
-                               isActive ? 'bg-indigo-500/20 border-indigo-400 text-indigo-400' : 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-850 text-slate-450'
-                             }`}>
-                               <div className="w-2/3 h-0.5 bg-current opacity-60 rounded-sm mx-auto"></div>
-                               <div className="w-1/2 h-[0.5px] bg-current opacity-40 rounded-sm mx-auto"></div>
-                               <div className="w-full h-[0.5px] bg-current opacity-25 rounded-sm mt-0.5"></div>
-                               <div className="w-4/5 h-[0.5px] bg-current opacity-25 rounded-sm"></div>
-                               <div className="w-full h-[0.5px] bg-current opacity-25 rounded-sm"></div>
-                             </div>
-                             <div>
-                               <p className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">{layout.name}</p>
-                               <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed pr-2">{layout.desc}</p>
-                             </div>
-                           </div>
-                           
-                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                             isActive ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300 dark:border-slate-700'
-                           }`}>
-                             {isActive && <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}
-                           </div>
-                         </div>
-                       );
-                     })}
-                   </div>
-
-                   {/* Font Chooser */}
-                   <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
-                     <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                       Pilih Tipografi Font
-                     </h4>
-                     <div className="grid grid-cols-2 gap-3">
-                       {FONTS_LIST.map((font) => {
-                         const isActive = fontFamily === font.id;
-                         return (
-                           <div
-                             key={font.id}
-                             onClick={() => setFontFamily(font.id)}
-                             className={`flex flex-col items-center p-3 border rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] active:scale-[0.99] ${
-                               isActive
-                                 ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-500/10 shadow-sm'
-                                 : 'border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-transparent'
-                             }`}
-                           >
-                             <span className="text-lg font-extrabold text-slate-900 dark:text-white mb-0.5" style={{ fontFamily: font.id }}>
-                               Aa
-                             </span>
-                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{font.name}</span>
-                             <span className="text-[9px] text-slate-400 mt-0.5">{font.desc}</span>
-                           </div>
-                         );
-                       })}
+                {/* Live Preview Wrapper */}
+                <div 
+                  onClick={() => setShowPreviewModal(true)}
+                  className="w-full flex justify-center items-start overflow-hidden relative hide-scrollbar cursor-pointer group"
+                  style={{ height: `${1123 * scale}px` }}
+                >
+                  <div className="absolute inset-0 z-20 bg-black/0 group-hover:bg-indigo-900/10 dark:group-hover:bg-indigo-400/10 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                     <div className="bg-indigo-600 text-white rounded-full p-4 shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                      </div>
-                   </div>
+                  </div>
 
-                   {/* Entity Style Chooser */}
-                   <div className="border-t border-slate-150 dark:border-slate-800/60 pt-5 mt-2">
-                     <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                       <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
-                       Gaya Teks Perusahaan & Kampus
-                     </h4>
-                     <div className="flex flex-col gap-3">
-                       <label className="flex items-center gap-3 cursor-pointer group">
-                         <div className="relative flex items-center justify-center">
-                           <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.isBold ?? true} onChange={(e) => handleEntityStyleChange('isBold', e.target.checked)} />
-                           <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.isBold !== false ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
-                           <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.isBold !== false ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
-                         </div>
-                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Tebalkan Teks (Bold)</span>
-                       </label>
-
-                       <label className="flex items-center gap-3 cursor-pointer group">
-                         <div className="relative flex items-center justify-center">
-                           <input type="checkbox" className="sr-only" checked={resumeData.design?.entityStyle?.hasBadge ?? false} onChange={(e) => handleEntityStyleChange('hasBadge', e.target.checked)} />
-                           <div className={`w-10 h-5.5 rounded-full transition-colors ${resumeData.design?.entityStyle?.hasBadge ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'}`}></div>
-                           <div className={`absolute left-1 top-1 w-3.5 h-3.5 bg-white rounded-full transition-transform ${resumeData.design?.entityStyle?.hasBadge ? 'translate-x-4.5' : 'translate-x-0'}`}></div>
-                         </div>
-                         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">Gaya Lencana (Badge)</span>
-                       </label>
-
-                       <div className="flex items-center gap-3 mt-1">
-                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Warna Aksen:</label>
-                         <input type="color" value={resumeData.design?.entityStyle?.color || '#4F46E5'} onChange={(e) => handleEntityStyleChange('color', e.target.value)} className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-none shadow-sm" />
-                       </div>
-                     </div>
-                   </div>
-
-                   {/* Apply Button */}
-                   <button
-                     type="button"
-                     onClick={() => setShowLayoutSelection(false)}
-                     className="w-full mt-auto py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 shrink-0 cursor-pointer"
-                   >
-                     Terapkan & Lihat Pratinjau
-                   </button>
-                 </div>
-               ) : (
-                 /* Live Preview Wrapper */
-                 <div 
-                   onClick={() => setShowPreviewModal(true)}
-                   className="w-full flex justify-center items-start overflow-hidden relative hide-scrollbar cursor-pointer group"
-                   style={{ height: `${1123 * scale}px` }}
-                 >
-                   <div className="absolute inset-0 z-20 bg-black/0 group-hover:bg-indigo-900/10 dark:group-hover:bg-indigo-400/10 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <div className="bg-indigo-600 text-white rounded-full p-4 shadow-2xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
-                      </div>
-                   </div>
-
-                   <div 
-                     className="origin-top transition-transform duration-200 ease-out absolute hide-scrollbar"
-                     style={{ 
-                       transform: `scale(${scale})`,
-                       width: '794px',
-                       height: '1123px',
-                       minWidth: '794px',
-                       minHeight: '1123px',
-                       overflow: 'hidden',
-                       fontFamily: fontFamily
-                     }}
-                   >
-                     <ResumeViewer templateId={templateId} data={resumeData} />
-                   </div>
-                 </div>
-               )}
+                  <div 
+                    className="origin-top transition-transform duration-200 ease-out absolute hide-scrollbar"
+                    style={{ 
+                      transform: `scale(${scale})`,
+                      width: '794px',
+                      height: '1123px',
+                      minWidth: '794px',
+                      minHeight: '1123px',
+                      overflow: 'hidden',
+                      fontFamily: fontFamily
+                    }}
+                  >
+                    <ResumeViewer templateId={templateId} data={resumeData} />
+                  </div>
+                </div>
              </div>
           </div>
 

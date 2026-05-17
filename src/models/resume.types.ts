@@ -39,6 +39,14 @@ export interface ResumeData {
       isBold: boolean;
       color: string;
       hasBadge: boolean;
+      badgeBgColor?: string;
+      badgeTextColor?: string;
+      badgeBorderRadius?: string;
+    };
+    theme?: {
+      sidebarBg: string;
+      sidebarText: string;
+      accent: string;
     };
   };
 }

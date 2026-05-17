@@ -18,29 +18,30 @@ export default function CorporateElegan({ data }: Props) {
   }));
 
   const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
+  const theme = data.design?.theme || { sidebarBg: data.design?.entityStyle?.color || '#2563EB', sidebarText: '#ffffff', accent: data.design?.entityStyle?.color || '#4F46E5' };
   const entityStyleCSS = {
     fontWeight: entityStyle.isBold ? 'bold' : 'normal',
-    color: entityStyle.color || 'inherit',
-    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    color: entityStyle.hasBadge ? (entityStyle.badgeTextColor || entityStyle.color || 'inherit') : (entityStyle.color || 'inherit'),
+    backgroundColor: entityStyle.hasBadge ? (entityStyle.badgeBgColor || `${entityStyle.color}1A`) : 'transparent',
     padding: entityStyle.hasBadge ? '2px 6px' : '0',
-    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+    borderRadius: entityStyle.hasBadge ? (entityStyle.badgeBorderRadius || '4px') : '0',
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-200 py-10 overflow-x-auto flex justify-center items-start selection:bg-primary-200 selection:text-primary-900">
+    <div className="min-h-screen w-full bg-slate-200 py-10 overflow-x-auto flex justify-center items-start selection:bg-primary-200 selection:text-[var(--color-accent)]">
       
       {/* A4 Document Container */}
-      <div className="w-[210mm] min-h-[297mm] flex flex-row shrink-0 bg-white shadow-2xl font-sans text-slate-900 print:shadow-none print:w-[210mm] print:min-h-[297mm] print:m-0 print:py-0 overflow-hidden transform origin-top md:scale-100 scale-75">
+      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] flex flex-row shrink-0 bg-white shadow-2xl  text-slate-900 print:shadow-none print:w-[210mm] print:min-h-[297mm] print:m-0 print:py-0 overflow-hidden transform origin-top md:scale-100 scale-75">
         
         {/* LEFT SIDEBAR: PROFILE */}
         <motion.aside 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="w-[33%] bg-primary-600 p-6 sm:p-8 text-white flex flex-col shrink-0"
+          className="w-[33%] bg-[var(--color-primary)] p-6 sm:p-8 text-[var(--color-primary-text)] flex flex-col shrink-0"
         >
         <div className="flex flex-col h-full">
           <div>
-            <div className="w-32 h-32 bg-secondary-400 rounded-2xl mb-8 shadow-lg transform rotate-3 flex items-center justify-center border-4 border-white overflow-hidden">
+            <div className="w-32 h-32 bg-[var(--color-accent)] rounded-2xl mb-8 shadow-lg transform rotate-3 flex items-center justify-center border-4 border-white overflow-hidden">
               <img 
                 src={data.profile.image || 'https://via.placeholder.com/150'} 
                 alt={data.profile.name} 
@@ -56,35 +57,35 @@ export default function CorporateElegan({ data }: Props) {
                 </React.Fragment>
               ))}
             </h1>
-            <h2 className="text-secondary-300 font-semibold tracking-widest text-xs uppercase mb-8 text-left">
+            <h2 className="text-[var(--color-accent)] font-semibold tracking-widest text-xs uppercase mb-8 text-left">
               {data.profile.headline}
             </h2>
 
             <div className="space-y-4 text-sm mb-10">
-              <div className="grid grid-cols-1 gap-2.5 pb-5 border-b border-primary-400">
+              <div className="grid grid-cols-1 gap-2.5 pb-5 border-b border-[var(--color-accent)]">
                 {data.profile.contact.website && (
-                  <a href={data.profile.contact.website.startsWith('http') ? data.profile.contact.website : `https://${data.profile.contact.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-[13px] hover:text-secondary-300 transition-colors">
-                    <span className="text-secondary-300 text-xs">●</span> {data.profile.contact.website}
+                  <a href={data.profile.contact.website.startsWith('http') ? data.profile.contact.website : `https://${data.profile.contact.website}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-[13px] hover:text-[var(--color-accent)] transition-colors">
+                    <span className="text-[var(--color-accent)] text-xs">●</span> {data.profile.contact.website}
                   </a>
                 )}
                 {data.profile.contact.email && (
-                  <a href={`mailto:${data.profile.contact.email}`} className="flex items-center gap-3 text-[13px] hover:text-secondary-300 transition-colors">
-                    <span className="text-secondary-300 text-xs">●</span> {data.profile.contact.email}
+                  <a href={`mailto:${data.profile.contact.email}`} className="flex items-center gap-3 text-[13px] hover:text-[var(--color-accent)] transition-colors">
+                    <span className="text-[var(--color-accent)] text-xs">●</span> {data.profile.contact.email}
                   </a>
                 )}
                 {data.profile.contact.phone && (
-                  <a href={`tel:${data.profile.contact.phone}`} className="flex items-center gap-3 text-[13px] hover:text-secondary-300 transition-colors">
-                    <span className="text-secondary-300 text-xs">●</span> {data.profile.contact.phone}
+                  <a href={`tel:${data.profile.contact.phone}`} className="flex items-center gap-3 text-[13px] hover:text-[var(--color-accent)] transition-colors">
+                    <span className="text-[var(--color-accent)] text-xs">●</span> {data.profile.contact.phone}
                   </a>
                 )}
                 {data.profile.contact.location && (
                   <div className="flex items-center gap-3 text-[13px]">
-                    <span className="text-secondary-300 text-xs">●</span> {data.profile.contact.location}
+                    <span className="text-[var(--color-accent)] text-xs">●</span> {data.profile.contact.location}
                   </div>
                 )}
               </div>
               <div className="opacity-90 mt-5">
-                <h3 className="font-bold text-secondary-300 uppercase text-[10px] mb-1.5 tracking-widest text-left">Ringkasan Profil Profesional</h3>
+                <h3 className="font-bold text-[var(--color-accent)] uppercase text-[10px] mb-1.5 tracking-widest text-left">Ringkasan Profil Profesional</h3>
                 <p className="leading-relaxed italic text-[13px]">{data.profile.summary}</p>
               </div>
             </div>
@@ -93,14 +94,14 @@ export default function CorporateElegan({ data }: Props) {
           <div className="space-y-8 mt-8">
             {skillsList.length > 0 && (
               <section>
-                <h3 className="text-secondary-300 font-black uppercase text-xs tracking-widest mb-4 text-left">Keterampilan Teknis</h3>
+                <h3 className="text-[var(--color-accent)] font-black uppercase text-xs tracking-widest mb-4 text-left">Keterampilan Teknis</h3>
                 <div className="space-y-4">
                   {skillsList.map((skillGroup, idx) => (
                     <div key={idx}>
                       <h4 className="text-[10px] font-bold text-primary-200 uppercase mb-1.5">{skillGroup.category}</h4>
                       <div className="flex flex-wrap gap-2">
                         {skillGroup.items.map((item, i) => (
-                          <span key={i} className="px-2 py-1 bg-primary-700 text-[10px] rounded border border-primary-400 leading-none">
+                          <span key={i} className="px-2 py-1 bg-[var(--color-primary)] text-[10px] rounded border border-[var(--color-accent)] leading-none">
                             {item}
                           </span>
                         ))}
@@ -114,11 +115,11 @@ export default function CorporateElegan({ data }: Props) {
             <div className="grid grid-cols-2 gap-4">
               {data.profile.languages && data.profile.languages.length > 0 && (
                 <section>
-                  <h3 className="text-secondary-300 font-black uppercase text-[10px] tracking-widest mb-2">Bahasa</h3>
+                  <h3 className="text-[var(--color-accent)] font-black uppercase text-[10px] tracking-widest mb-2">Bahasa</h3>
                   <div className="flex flex-col gap-1.5 list-none">
                     {data.profile.languages.map((lang, idx) => (
                       <div key={idx} className="text-[11px] leading-tight flex items-start gap-2">
-                        <span className="text-secondary-300 text-[8px] mt-0.5">●</span>
+                        <span className="text-[var(--color-accent)] text-[8px] mt-0.5">●</span>
                         <span>{lang}</span>
                       </div>
                     ))}
@@ -128,11 +129,11 @@ export default function CorporateElegan({ data }: Props) {
               
               {data.profile.interests && data.profile.interests.length > 0 && (
                 <section>
-                  <h3 className="text-secondary-300 font-black uppercase text-[10px] tracking-widest mb-2">Ketertarikan</h3>
+                  <h3 className="text-[var(--color-accent)] font-black uppercase text-[10px] tracking-widest mb-2">Ketertarikan</h3>
                   <div className="flex flex-col gap-1.5 list-none">
                     {data.profile.interests.map((hobby, idx) => (
                       <div key={idx} className="text-[11px] leading-tight flex items-start gap-2">
-                        <span className="text-secondary-300 text-[8px] mt-0.5">●</span>
+                        <span className="text-[var(--color-accent)] text-[8px] mt-0.5">●</span>
                         <span>{hobby}</span>
                       </div>
                     ))}
@@ -157,11 +158,11 @@ export default function CorporateElegan({ data }: Props) {
                 <div className="space-y-8">
                   {data.experience.map((exp, idx) => (
                     <div key={idx} className="flex gap-4 group">
-                      <div className="w-1 bg-secondary-400 shrink-0"></div>
+                      <div className="w-1 bg-[var(--color-accent)] shrink-0"></div>
                       <div className="flex-1">
                         <div className="flex flex-col xl:flex-row xl:justify-between xl:items-start gap-1 xl:gap-4 mb-2">
                           <h4 className="font-bold text-lg leading-tight text-slate-900">{exp.title} — <span className="text-slate-600 inline-block" style={entityStyleCSS}>{exp.company}</span></h4>
-                          <span className="text-[10px] bg-primary-600 text-white rounded px-2 py-1 font-bold whitespace-nowrap self-start">
+                          <span className="text-[10px] bg-[var(--color-accent)] text-[var(--color-primary-text)] rounded px-2 py-1 font-bold whitespace-nowrap self-start">
                             {exp.period}
                           </span>
                         </div>
@@ -194,14 +195,14 @@ export default function CorporateElegan({ data }: Props) {
                         href={proj.url.startsWith('http') ? proj.url : `https://${proj.url}`} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="block p-4 border-2 border-dashed border-primary-200 rounded-lg group hover:border-secondary-400 hover:bg-slate-50 transition-all flex flex-col items-start"
+                        className="block p-4 border-2 border-dashed border-primary-200 rounded-lg group hover:border-[var(--color-accent)] hover:bg-slate-50 transition-all flex flex-col items-start"
                       >
                         {proj.image && (
                            <div className="w-full h-24 mb-3 rounded overflow-hidden">
                               <img src={proj.image} alt={proj.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 grayscale group-hover:grayscale-0" />
                            </div>
                         )}
-                        <h3 className="text-[11px] font-bold text-primary-600 uppercase mb-1 underline group-hover:text-secondary-600 transition-colors">
+                        <h3 className="text-[11px] font-bold text-[var(--color-accent)] uppercase mb-1 underline group-hover:text-[var(--color-accent)] transition-colors">
                           {proj.name}
                         </h3>
                         <p className="text-[12px] font-medium leading-snug text-slate-700 mb-2">
@@ -210,7 +211,7 @@ export default function CorporateElegan({ data }: Props) {
                         
                         <div className="flex gap-1.5 flex-wrap mt-auto">
                           {proj.techStack.map((tech, i) => (
-                            <span key={i} className="text-slate-500 font-bold uppercase tracking-wider text-[8px] bg-slate-100 px-1.5 py-0.5 rounded">
+                            <span key={i} className="font-bold uppercase tracking-wider text-[8px] bg-[var(--color-badge-bg)] text-[var(--color-badge-text)] px-1.5 py-0.5 rounded-[var(--badge-radius)]">
                               {tech}
                             </span>
                           ))}
@@ -228,17 +229,17 @@ export default function CorporateElegan({ data }: Props) {
                   <div className="space-y-4">
                     {data.education.map((edu, idx) => (
                       <div key={idx}>
-                        <h3 className="font-bold text-sm text-slate-900 text-left">{edu.degree} @ <span className="inline-block" style={entityStyleCSS}>{edu.campus}</span></h3>
-                        <p className="text-[11px] text-white mt-1 font-medium bg-primary-600 inline-block px-2 py-0.5 rounded text-left">{edu.year} • {edu.gpa}</p>
+                        <h3 className="font-bold text-sm text-slate-900 text-left">{edu.degree} <span className="inline-block" style={entityStyleCSS}>{edu.campus}</span></h3>
+                        <p className="text-[11px] text-[var(--color-badge-text)] mt-1 font-medium bg-[var(--color-badge-bg)] inline-block px-2 py-0.5 rounded-[var(--badge-radius)] text-left">{edu.year} • {edu.gpa}</p>
                       </div>
                     ))}
                   </div>
                   
                   {data.availability && (
                     <div className="mt-6">
-                      <div className="bg-primary-50 p-4 rounded-lg border-l-4 border-primary-600">
-                        <h3 className="text-[10px] font-bold uppercase text-primary-600 mb-1 tracking-widest">Availability</h3>
-                        <p className="text-[12px] text-primary-900 italic font-medium">{data.availability}</p>
+                      <div className="bg-primary-50 p-4 rounded-lg border-l-4 border-[var(--color-accent)]">
+                        <h3 className="text-[10px] font-bold uppercase text-[var(--color-accent)] mb-1 tracking-widest">Availability</h3>
+                        <p className="text-[12px] text-[var(--color-accent)] italic font-medium">{data.availability}</p>
                       </div>
                     </div>
                   )}

@@ -20,21 +20,27 @@ export default function ModernDuaKolom({ data }: Props) {
   const entityStyle = data.design?.entityStyle || { isBold: true, color: '', hasBadge: false };
   const entityStyleCSS = {
     fontWeight: entityStyle.isBold ? 'bold' : 'normal',
-    color: entityStyle.color || 'inherit',
-    backgroundColor: entityStyle.hasBadge ? `${entityStyle.color}1A` : 'transparent',
+    color: entityStyle.hasBadge ? (entityStyle.badgeTextColor || entityStyle.color || 'inherit') : (entityStyle.color || 'inherit'),
+    backgroundColor: entityStyle.hasBadge ? (entityStyle.badgeBgColor || `${entityStyle.color}1A`) : 'transparent',
     padding: entityStyle.hasBadge ? '2px 6px' : '0',
-    borderRadius: entityStyle.hasBadge ? '4px' : '0',
+    borderRadius: entityStyle.hasBadge ? (entityStyle.badgeBorderRadius || '4px') : '0',
   };
 
+  const theme = data.design?.theme || { sidebarBg: '#1e3a8a', sidebarText: '#f8fafc', accent: '#4f46e5' };
+  const themeStyle = {
+    '--color-sidebar': theme.sidebarBg,
+    '--color-sidebar-text': theme.sidebarText,
+    '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px',
+  } as React.CSSProperties;
+
   return (
-    <div className="min-h-screen bg-slate-200 py-10 flex justify-center items-start font-sans overflow-auto">
+    <div style={themeStyle} className="min-h-screen bg-slate-200 py-10 flex justify-center items-start overflow-auto">
       {/* Container A4 Page */}
-      <div
-        className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row overflow-hidden text-sm transform origin-top md:scale-100 scale-75"
+      <div style={{ '--color-primary': theme.sidebarBg, '--color-primary-text': theme.sidebarText, '--color-accent': theme.accent, '--color-badge-bg': entityStyle.badgeBgColor || '#E0E7FF', '--color-badge-text': entityStyle.badgeTextColor || '#4F46E5', '--badge-radius': entityStyle.badgeBorderRadius || '4px' } as React.CSSProperties} className="w-[210mm] min-h-[297mm] bg-white shadow-2xl flex flex-row overflow-hidden text-sm transform origin-top md:scale-100 scale-75"
         style={{ boxSizing: "border-box" }}
       >
         {/* Konten Kiri (Sidebar) */}
-        <aside className="w-1/3 bg-primary-900 text-primary-50 p-8 flex flex-col gap-8">
+        <aside className="w-1/3 bg-[var(--color-sidebar)] text-[var(--color-sidebar-text)] p-8 flex flex-col gap-8">
           {/* Header Profile */}
           <div className="flex flex-col items-center gap-4">
             <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden shadow-lg transform rotate-3">
@@ -45,22 +51,22 @@ export default function ModernDuaKolom({ data }: Props) {
               />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold tracking-tight text-white mb-1">
+              <h1 className="text-2xl font-bold tracking-tight text-[var(--color-primary-text)] mb-1">
                 {data.profile.name}
               </h1>
-              <h2 className="text-secondary-400 font-medium tracking-wide">
+              <h2 className="text-[var(--color-accent)] font-medium tracking-wide">
                 {data.profile.headline}
               </h2>
             </div>
           </div>
 
           {/* Contacts */}
-          <div className="flex flex-col gap-3 pb-6 border-b border-primary-700/50">
+          <div className="flex flex-col gap-3 pb-6 border-b border-[var(--color-accent)]/50">
             {contacts.map((contact, idx) => {
               const Icon = contact.icon;
               return (
                 <div key={idx} className="flex items-center gap-3 text-xs">
-                  <Icon className="w-4 h-4 text-secondary-300 shrink-0" />
+                  <Icon className="w-4 h-4 text-[var(--color-accent)] shrink-0" />
                   <span className="text-primary-100">{contact.value}</span>
                 </div>
               );
@@ -69,7 +75,7 @@ export default function ModernDuaKolom({ data }: Props) {
 
           {/* Summary */}
           <div className="flex flex-col gap-3">
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider border-b-2 border-primary-600 inline-block w-max pb-1">
+            <h3 className="text-lg font-bold text-[var(--color-primary-text)] uppercase tracking-wider border-b-2 border-[var(--color-accent)] inline-block w-max pb-1">
               Profil Profesional
             </h3>
             <p className="italic text-xs leading-relaxed text-primary-100">
@@ -79,19 +85,19 @@ export default function ModernDuaKolom({ data }: Props) {
 
           {/* Skills */}
           <div className="flex flex-col gap-4 pt-2">
-            <h3 className="text-lg font-bold text-white uppercase tracking-wider border-b-2 border-primary-600 pb-1">
+            <h3 className="text-lg font-bold text-[var(--color-primary-text)] uppercase tracking-wider border-b-2 border-[var(--color-accent)] pb-1">
               Keterampilan Teknis
             </h3>
             {Object.entries(data.profile.skills || {}).map(([category, items], idx) => (
               <div key={idx} className="flex flex-col gap-2">
-                <h4 className="text-xs font-semibold text-secondary-300">
+                <h4 className="text-xs font-semibold text-[var(--color-accent)]">
                   {category}
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {items.map((skill, sIdx) => (
                     <span
                       key={sIdx}
-                      className="px-2 py-0.5 bg-primary-800 text-primary-100 text-[10px] font-medium rounded-full border border-primary-700"
+                      className="px-2 py-0.5 bg-[var(--color-primary)] text-primary-100 text-[10px] font-medium rounded-full border border-[var(--color-accent)]"
                     >
                       {skill}
                     </span>
@@ -102,9 +108,9 @@ export default function ModernDuaKolom({ data }: Props) {
           </div>
 
           {/* Languages & Interests */}
-          <div className="flex flex-col gap-4 pt-2 mt-auto">
+          <div className="flex flex-col gap-4 pt-2 mt-4">
             <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider border-b-2 border-primary-600 pb-1">
+              <h3 className="text-lg font-bold text-[var(--color-primary-text)] uppercase tracking-wider border-b-2 border-[var(--color-accent)] pb-1">
                 Bahasa
               </h3>
               <ul className="list-disc list-inside text-xs text-primary-100 space-y-1">
@@ -114,7 +120,7 @@ export default function ModernDuaKolom({ data }: Props) {
               </ul>
             </div>
             <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider border-b-2 border-primary-600 pb-1">
+              <h3 className="text-lg font-bold text-[var(--color-primary-text)] uppercase tracking-wider border-b-2 border-[var(--color-accent)] pb-1">
                 Ketertarikan
               </h3>
               <ul className="list-disc list-inside text-xs text-primary-100 space-y-1">
@@ -139,7 +145,7 @@ export default function ModernDuaKolom({ data }: Props) {
               <div className="flex flex-col gap-6 pl-2">
                 {data.experience.map((exp, idx) => (
                   <div key={idx} className="relative pl-6">
-                    <span className="absolute top-1.5 left-0 w-2.5 h-2.5 bg-primary-500 rounded-full ring-4 ring-primary-50"></span>
+                    <span className="absolute top-1.5 left-0 w-2.5 h-2.5 bg-[var(--color-primary)] rounded-full ring-4 ring-primary-50"></span>
                     {idx !== data.experience.length - 1 && (
                       <span className="absolute top-4 left-1 w-0.5 h-[calc(100%+0.5rem)] bg-slate-200"></span>
                     )}
@@ -150,7 +156,7 @@ export default function ModernDuaKolom({ data }: Props) {
                           {exp.company}
                         </span>
                       </h4>
-                      <span className="shrink-0 px-2.5 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-sm shadow-sm whitespace-nowrap mt-0.5">
+                      <span className="shrink-0 px-2.5 py-0.5 bg-[var(--color-accent)] text-[var(--color-primary-text)] text-[10px] font-bold rounded-sm shadow-sm whitespace-nowrap mt-0.5">
                         {exp.period}
                       </span>
                     </div>
@@ -194,7 +200,7 @@ export default function ModernDuaKolom({ data }: Props) {
                       <h4 className="font-bold text-slate-900 leading-tight">
                         {project.name}
                       </h4>
-                      <span className="text-[10px] text-primary-600 font-medium">
+                      <span className="text-[10px] text-[var(--color-accent)] font-medium">
                         {project.url}
                       </span>
                     </div>
@@ -237,10 +243,10 @@ export default function ModernDuaKolom({ data }: Props) {
                       </h3>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 mt-0.5">
-                      <span className="px-2 py-0.5 bg-primary-100 text-primary-800 text-[10px] font-bold rounded-sm border border-primary-200">
+                      <span className="px-2 py-0.5 bg-primary-100 text-[var(--color-accent)] text-[10px] font-bold rounded-sm border border-primary-200">
                         {edu.year}
                       </span>
-                      <span className="px-2 py-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-sm shadow-sm">
+                      <span className="px-2 py-0.5 bg-[var(--color-primary)] text-[var(--color-primary-text)] text-[10px] font-bold rounded-sm shadow-sm">
                         IPK: {edu.gpa}
                       </span>
                     </div>
