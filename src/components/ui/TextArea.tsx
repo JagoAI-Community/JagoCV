@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../utils/cn';
-import type { ThemeColor } from '../../models/types';
+import type { ThemeColor } from '../../types/enums';
 
 const focusRings: Record<ThemeColor, string> = {
   blue: 'focus:border-[#1E5EFF] focus:ring-1 focus:ring-[#1E5EFF]',

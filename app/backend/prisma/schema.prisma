@@ -3,13 +3,142 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// =======================================================
-// ENUMS — Memastikan integritas data (tidak bisa salah isi)
-// =======================================================
+model User {
+  id                 String           @id @default(uuid())
+  email              String           @unique
+  password           String
+  name               String
+  profileImageUrl    String?
+  subscriptionTier   SubscriptionTier @default(BIASA)
+  subscriptionEndsAt DateTime?
+  aiCredits          Int              @default(10)
+  portfolioViews     Int              @default(0)
+  deletedAt          DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  bio                String?
+  headline           String?
+  location           String?
+  aiUsageLogs        AiUsageLog[]
+  chatMessages       ChatMessage[]
+  documents          Document[]
+  education          Education[]
+  experience         Experience[]
+  phones             UserPhone[]
+  socialLinks        UserSocial[]
+
+  @@index([email])
+}
+
+model UserSocial {
+  id       String @id @default(uuid())
+  platform String
+  url      String
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPhone {
+  id     String @id @default(uuid())
+  number String
+  label  String @default("Utama")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Experience {
+  id          String    @id @default(uuid())
+  company     String
+  position    String
+  location    String?
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  isCurrent   Boolean   @default(false)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id           String    @id @default(uuid())
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime
+  endDate      DateTime?
+  description  String?
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id          String         @id @default(uuid())
+  title       String
+  type        DocumentType
+  status      DocumentStatus @default(DRAF)
+  content     Json?
+  templateId  String?        @default("standard")
+  fontFamily  String?        @default("Inter")
+  themeColor  String?        @default("blue")
+  slug        String?        @unique
+  views       Int            @default(0)
+  deletedAt   DateTime?
+  userId      String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  aiUsageLogs AiUsageLog[]
+  chatHistory ChatMessage[]
+  template    Template?      @relation(fields: [templateId], references: [id])
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, deletedAt])
+}
+
+model ChatMessage {
+  id         String    @id @default(uuid())
+  role       ChatRole
+  content    String
+  userId     String
+  documentId String?
+  createdAt  DateTime  @default(now())
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+}
+
+model AiUsageLog {
+  id            String    @id @default(uuid())
+  feature       String
+  creditsUsed   Int       @default(1)
+  promptSummary String?
+  userId        String
+  documentId    String?
+  createdAt     DateTime  @default(now())
+  document      Document? @relation(fields: [documentId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Template {
+  id         String       @id @default(uuid())
+  name       String
+  type       DocumentType
+  previewUrl String?
+  isActive   Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  documents  Document[]
+}
 
 enum UserRole {
   USER
@@ -37,179 +166,4 @@ enum DocumentStatus {
 enum ChatRole {
   USER
   ASSISTANT
-}
-
-// =======================================================
-// MODELS
-// =======================================================
-
-model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  password        String
-  name            String
-  headline        String?          // Contoh: "Senior Frontend Engineer"
-  bio             String?          @db.Text
-  profileImageUrl String?
-  location        String?
-
-  // Fitur Langganan
-  subscriptionTier   SubscriptionTier @default(BIASA)
-  subscriptionEndsAt DateTime?
-  aiCredits          Int              @default(10)
-
-  portfolioViews Int @default(0)
-
-  // Socials & Contact (Multiple)
-  socialLinks UserSocial[]
-  phones      UserPhone[]
-
-  // Professional Data
-  experience Experience[]
-  education  Education[]
-
-  // Soft Delete
-  deletedAt DateTime?
-
-  documents    Document[]
-  chatMessages ChatMessage[]
-  aiUsageLogs  AiUsageLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([email])
-}
-
-model UserSocial {
-  id       String @id @default(uuid())
-  platform String // Contoh: "LinkedIn", "GitHub", "Twitter"
-  url      String
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model UserPhone {
-  id     String @id @default(uuid())
-  number String
-  label  String @default("Utama") // Contoh: "Utama", "Kerja"
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Experience {
-  id           String    @id @default(uuid())
-  company      String
-  position     String
-  location     String?
-  startDate    DateTime
-  endDate      DateTime? // Null jika sedang bekerja di sini
-  description  String?   @db.Text
-  isCurrent    Boolean   @default(false)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Education {
-  id           String    @id @default(uuid())
-  institution  String
-  degree       String
-  fieldOfStudy String?
-  startDate    DateTime
-  endDate      DateTime?
-  description  String?   @db.Text
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Document {
-  id     String         @id @default(uuid())
-  title  String
-  type   DocumentType
-  status DocumentStatus @default(DRAF)
-
-  // Konten Utama (semua isian wizard/form dalam format JSON)
-  content Json?
-
-  // Preferensi Desain — tersimpan per dokumen
-  templateId String? @default("standard")
-  template   Template? @relation(fields: [templateId], references: [id])
-  
-  fontFamily String? @default("Inter")
-  themeColor String? @default("blue")
-
-  // Publikasi & Statistik
-  slug  String? @unique
-  views Int     @default(0)
-
-  // Soft Delete
-  deletedAt DateTime?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Riwayat chat spesifik dokumen ini
-  chatHistory ChatMessage[]
-  aiUsageLogs AiUsageLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([userId, deletedAt]) // Index komposit untuk query soft-delete yang umum
-}
-
-model ChatMessage {
-  id      String   @id @default(uuid())
-  role    ChatRole
-  content String   @db.Text
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  documentId String?
-  document   Document? @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([documentId])
-}
-
-model AiUsageLog {
-  id String @id @default(uuid())
-
-  // Fitur apa yang digunakan (contoh: "GENERATE_CV", "CHAT_EDIT", "GENERATE_RESUME")
-  feature     String
-  creditsUsed Int    @default(1)
-
-  // Prompt singkat yang dikirim ke AI (untuk audit)
-  promptSummary String?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Dokumen yang terkait (opsional, bisa null jika chat global)
-  documentId String?
-  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@index([createdAt]) // Untuk query analytics per periode
-}
-
-model Template {
-  id          String       @id @default(uuid())
-  name        String
-  type        DocumentType
-  previewUrl  String?
-  isActive    Boolean      @default(true)
-  
-  documents   Document[]
-
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
 }

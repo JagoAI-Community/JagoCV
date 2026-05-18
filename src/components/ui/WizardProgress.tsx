@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../utils/cn';
-import type { ThemeColor, WizardStep } from '../../models/types';
+import type { ThemeColor, WizardStep } from '../../types/enums';
 
 // ===================================================================
 // THEME COLOR MAPS

@@ -11,7 +11,7 @@ export default function HeroSection() {
 
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tighter mb-6 leading-[1.1] animate-[slideDown_0.6s_ease_forwards]">
           Rancang Masa Depanmu,<br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-teal-300">Mulai dari CV Hebat.</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 dark:from-blue-400 dark:via-cyan-300 dark:to-teal-300">Mulai dari CV Hebat.</span>
         </h1>
 
         <p className="text-lg md:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mb-12 animate-[slideDown_0.7s_ease_forwards] font-light">

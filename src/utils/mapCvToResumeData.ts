@@ -1,6 +1,6 @@
-import React from 'react';
-import { CvFormData } from '../models/document';
-import { ResumeData } from '../models/resume.types';
+﻿import React from 'react';
+import { CvFormData } from '../types/document';
+import { ResumeData } from '../types/resume.types';
 
 export function mapCvToResumeData(cv: CvFormData, isPreview: boolean = false): ResumeData {
   const hasExperience = cv.experiences && cv.experiences.length > 0;
