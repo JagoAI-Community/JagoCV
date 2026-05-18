@@ -1,0 +1,7 @@
+
+body {
+  margin: 0;
+  height: 100%;
+  @apply bg-[#0A0C10] text-slate-200;
+}
+

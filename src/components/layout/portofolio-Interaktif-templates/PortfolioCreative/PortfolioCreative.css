@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-neo-bg: #1a1c1e;
+  --color-neo-text: #cbd5e1;
+  --color-neo-text-dim: #94a3b8;
+  --color-neo-accent: #3b82f6;
+  --color-neo-border: #25282c;
+}
+
+body {
+  background-color: var(--color-neo-bg);
+  color: var(--color-neo-text);
+  font-family: var(--font-sans);
+}
+
+/* Neumorphic Utilities */
+.bg-neo {
+  background-color: var(--color-neo-bg);
+}
+
+.neo-raised, .neo-flat {
+  background: var(--color-neo-bg);
+  box-shadow: 8px 8px 16px #121315, -8px -8px 16px #222527;
+}
+
+.neo-flat-sm {
+  background: var(--color-neo-bg);
+  box-shadow: 5px 5px 10px #121315, -5px -5px 10px #222527;
+}
+
+.neo-circle {
+  background: var(--color-neo-bg);
+  box-shadow: 6px 6px 12px #121315, -6px -6px 12px #222527;
+}
+
+.neo-pressed, .neo-inset {
+  background: var(--color-neo-bg);
+  box-shadow: inset 6px 6px 12px #121315, inset -6px -6px 12px #222527;
+}
+
+.neo-pressed-small, .neo-inset-sm {
+  background: var(--color-neo-bg);
+  box-shadow: inset 3px 3px 6px #121315, inset -3px -3px 6px #222527;
+}
+
+.neo-button {
+  background: var(--color-neo-bg);
+  box-shadow: 5px 5px 10px #121315, -5px -5px 10px #222527;
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-button:hover {
+  box-shadow: 3px 3px 6px #121315, -3px -3px 6px #222527;
+  transform: translateY(2px);
+}
+
+.neo-button:active {
+  box-shadow: inset 3px 3px 6px #121315, inset -3px -3px 6px #222527;
+  transform: translateY(4px);
+}
+
+.neo-interactive {
+  transition: all 0.2s ease-in-out;
+}
+
+.neo-interactive:hover {
+  box-shadow: 3px 3px 6px #121315, -3px -3px 6px #222527;
+  transform: translateY(2px);
+}
+
+.neo-interactive:active {
+  box-shadow: inset 3px 3px 6px #121315, inset -3px -3px 6px #222527;
+  transform: translateY(4px);
+}
+
