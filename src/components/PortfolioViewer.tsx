@@ -1,8 +1,8 @@
-import { PortfolioData } from '../models/portfolio';
+import { PortfolioData } from '../types/portfolio';
 
-// Dynamically scan and import all portfolio templates
+// Dynamically scan and import all portfolio templates (eager loading for reliability)
 const portfolioTemplates = (import.meta as any).glob(
-  './layout/portofolio-Interaktif-templates/*/*.tsx',
+  '../templates/portfolio/*/*.tsx',
   { eager: true }
 );
 
@@ -14,13 +14,13 @@ interface Props {
 export default function PortfolioViewer({ templateId, data }: Props) {
   // Build the expected path from the templateId
   // templateId is e.g. "BentoGelap" — folder and file share the same name
-  const templatePath = `./layout/portofolio-Interaktif-templates/${templateId}/${templateId}.tsx`;
+  const templatePath = `../templates/portfolio/${templateId}/${templateId}.tsx`;
 
   let module: any = portfolioTemplates[templatePath] || null;
 
   // Fallback to BentoGelap if not found
   if (!module) {
-    module = portfolioTemplates['./layout/portofolio-Interaktif-templates/BentoGelap/BentoGelap.tsx'];
+    module = portfolioTemplates['../templates/portfolio/BentoGelap/BentoGelap.tsx'];
   }
 
   if (module && module.default) {

@@ -1,42 +1,25 @@
-import type { SaveDocumentPayload } from '../models/document';
-import type { LoginCredentials, RegisterData, AuthResponse } from '../models/user';
-
-const getApiUrl = () => {
-  if ((import.meta as any).env?.VITE_API_URL) return (import.meta as any).env.VITE_API_URL;
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
-      return 'http://localhost:5000/api';
-    }
-  }
-  return '/api';
-};
-
-const API_URL = getApiUrl();
+import type { SaveDocumentPayload } from '../types/document';
+import type { LoginCredentials, RegisterData, AuthResponse } from '../types/user';
+import { API_BASE_URL, CACHE_PREFIX, CACHE_EXPIRY_MS, TOKEN_KEY } from '../config';
 
 /**
  * Service API — Abstraksi fetch dengan auth token.
  * Semua method return typed data.
  */
 class ApiService {
-  private CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutes in ms
 
   private setCache(key: string, data: any) {
-    const cacheData = {
-      timestamp: Date.now(),
-      data
-    };
-    localStorage.setItem(`jago_cache_${key}`, JSON.stringify(cacheData));
+    const cacheData = { timestamp: Date.now(), data };
+    localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(cacheData));
   }
 
   private getCache<T>(key: string): T | null {
-    const cached = localStorage.getItem(`jago_cache_${key}`);
+    const cached = localStorage.getItem(`${CACHE_PREFIX}${key}`);
     if (!cached) return null;
-
     try {
       const { timestamp, data } = JSON.parse(cached);
-      if (Date.now() - timestamp > this.CACHE_EXPIRY) {
-        localStorage.removeItem(`jago_cache_${key}`);
+      if (Date.now() - timestamp > CACHE_EXPIRY_MS) {
+        localStorage.removeItem(`${CACHE_PREFIX}${key}`);
         return null;
       }
       return data as T;
@@ -46,15 +29,13 @@ class ApiService {
   }
 
   public clearCache() {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('jago_cache_')) {
-        localStorage.removeItem(key);
-      }
-    });
+    Object.keys(localStorage)
+      .filter(key => key.startsWith(CACHE_PREFIX))
+      .forEach(key => localStorage.removeItem(key));
   }
 
   private getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem(TOKEN_KEY);
   }
 
   private log(method: string, endpoint: string, status: 'SUCCESS' | 'ERROR', data?: any) {
@@ -93,7 +74,7 @@ class ApiService {
     };
 
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
       const data = await response.json();
 
       if (!response.ok) {
@@ -122,11 +103,11 @@ class ApiService {
     return this.request<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  async getMe(): Promise<import('../models/user').User> {
-    const cached = this.getCache<import('../models/user').User>('user');
+  async getMe(): Promise<import('../types/user').User> {
+    const cached = this.getCache<import('../types/user').User>('user');
     if (cached) return cached;
 
-    const data = await this.request<import('../models/user').User>('/auth/me');
+    const data = await this.request<import('../types/user').User>('/auth/me');
     this.setCache('user', data);
     return data;
   }
@@ -139,18 +120,18 @@ class ApiService {
     profileImageUrl?: string;
     socialLinks?: { platform: string, url: string }[];
     phones?: { number: string, label: string }[];
-  }): Promise<import('../models/user').User> {
+  }): Promise<import('../types/user').User> {
     const res = await this.request('/auth/profile', { method: 'PUT', body: JSON.stringify(data) });
     this.setCache('user', res); // Update cache with fresh data
     return res;
   }
 
   // === Documents ===
-  async getDocuments(): Promise<import('../models/types').RecentDocument[]> {
-    const cached = this.getCache<import('../models/types').RecentDocument[]>('documents');
+  async getDocuments(): Promise<import('../types/enums').RecentDocument[]> {
+    const cached = this.getCache<import('../types/enums').RecentDocument[]>('documents');
     if (cached) return cached;
 
-    const data = await this.request<import('../models/types').RecentDocument[]>('/documents');
+    const data = await this.request<import('../types/enums').RecentDocument[]>('/documents');
     this.setCache('documents', data);
     return data;
   }
@@ -161,19 +142,19 @@ class ApiService {
 
   async saveDocument(doc: SaveDocumentPayload): Promise<any> {
     const res = await this.request('/documents', { method: 'POST', body: JSON.stringify(doc) });
-    localStorage.removeItem('jago_cache_documents');
+    localStorage.removeItem(`${CACHE_PREFIX}documents`);
     return res;
   }
 
   async updateDocument(id: string, data: Partial<SaveDocumentPayload>): Promise<any> {
     const res = await this.request(`/documents/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
-    localStorage.removeItem('jago_cache_documents');
+    localStorage.removeItem(`${CACHE_PREFIX}documents`);
     return res;
   }
 
   async deleteDocument(id: string): Promise<any> {
     const res = await this.request(`/documents/${id}`, { method: 'DELETE' });
-    localStorage.removeItem('jago_cache_documents');
+    localStorage.removeItem(`${CACHE_PREFIX}documents`);
     return res;
   }
 

@@ -1,25 +1,25 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import './index.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingView from './components/views/LandingView';
-import LoginView from './components/views/LoginView';
-import RegisterView from './components/views/RegisterView';
-import ProfileView from './components/views/ProfileView';
-import PricingView from './components/views/PricingView';
-import DashboardView from './components/views/DashboardView';
-import CreateCvView from './components/views/CreateCvView';
-import DesignResumeView from './components/views/DesignResumeView';
-import BuildPortfolioView from './components/views/BuildPortfolioView';
-import CvResultView from './components/views/CvResultView';
-import ResumeResultView from './components/views/ResumeResultView';
-import PortfolioResultView from './components/views/PortfolioResultView';
+import LandingView from './views/LandingView';
+import LoginView from './views/LoginView';
+import RegisterView from './views/RegisterView';
+import ProfileView from './views/ProfileView';
+import PricingView from './views/PricingView';
+import DashboardView from './views/DashboardView';
+import CreateCvView from './views/CreateCvView';
+import DesignResumeView from './views/DesignResumeView';
+import BuildPortfolioView from './views/BuildPortfolioView';
+import CvResultView from './views/CvResultView';
+import ResumeResultView from './views/ResumeResultView';
+import PortfolioResultView from './views/PortfolioResultView';
 import AppLayout from './components/layout/AppLayout';
 
-import EditProfileView from './components/views/EditProfileView';
-import SettingsView from './components/views/SettingsView';
-import HelpView from './components/views/HelpView';
+import EditProfileView from './views/EditProfileView';
+import SettingsView from './views/SettingsView';
+import HelpView from './views/HelpView';
 
-import { useAuth } from './controllers/useAuth';
+import { useAuth } from './hooks/useAuth';
 
 function RootRoute() {
   const { isAuthenticated, isLoading } = useAuth();

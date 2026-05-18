@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { cn } from '../../utils/cn';
-import type { ThemeColor } from '../../models/types';
+import type { ThemeColor } from '../../types/enums';
 
 // ===================================================================
 // THEME COLOR MAPPINGS

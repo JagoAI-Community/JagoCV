@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import { useAuth } from '../../controllers/useAuth';
-import { useTheme } from '../../controllers/useTheme';
+import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function AppLayout() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -27,7 +27,7 @@ export default function AppLayout() {
     <div className="flex-col w-full flex-1 bg-slate-50 dark:bg-[#0B1221] min-h-screen">
       <Navbar 
         userName={user?.name}
-        userRole={user?.role}
+        userRole={user?.subscriptionTier}
         profileImageUrl={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=eff6ff&color=3b82f6`}
         onProfileClick={() => navigate('/profile')}
         onThemeToggle={toggleTheme}
