@@ -38,31 +38,7 @@ class ApiService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
-  private log(method: string, endpoint: string, status: 'SUCCESS' | 'ERROR', data?: any) {
-    const colors = {
-      GET: 'color: #3b82f6; font-weight: bold',
-      POST: 'color: #10b981; font-weight: bold',
-      PUT: 'color: #f59e0b; font-weight: bold',
-      PATCH: 'color: #f59e0b; font-weight: bold',
-      DELETE: 'color: #ef4444; font-weight: bold',
-      SUCCESS: 'background: #10b981; color: white; padding: 2px 5px; border-radius: 3px; font-weight: bold',
-      ERROR: 'background: #ef4444; color: white; padding: 2px 5px; border-radius: 3px; font-weight: bold'
-    };
 
-    const methodColor = (colors as any)[method] || 'color: gray';
-    const statusColor = (colors as any)[status];
-
-    console.groupCollapsed(
-      `%c ${method} %c ${endpoint} %c ${status} `,
-      methodColor,
-      'color: inherit; font-weight: normal',
-      statusColor
-    );
-    if (data) {
-      console.log('Payload/Response:', data);
-    }
-    console.groupEnd();
-  }
 
   async request<T = any>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const method = options.method || 'GET';
@@ -78,16 +54,11 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        this.log(method, endpoint, 'ERROR', data);
         throw new Error(data.error || 'Terjadi kesalahan');
       }
 
-      this.log(method, endpoint, 'SUCCESS', data);
       return data as T;
     } catch (error: any) {
-      if (!(error instanceof SyntaxError)) {
-        this.log(method, endpoint, 'ERROR', error.message);
-      }
       throw error;
     }
   }

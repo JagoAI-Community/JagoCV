@@ -40,7 +40,6 @@ async function getGoogleFontsCSS(): Promise<string> {
  * @param fileName The name of the file to save.
  */
 export const exportToPng = async (elementId: string, fileName: string = 'document') => {
-  console.log(`Starting PNG export for element: ${elementId}`);
   const element = document.getElementById(elementId);
   if (!element) {
     console.error(`Element with ID ${elementId} not found`);
@@ -49,7 +48,6 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    console.log('Converting to PNG with html-to-image...');
     
     // Fetch Google Fonts CSS to avoid CORS errors
     const fontCSS = await getGoogleFontsCSS();
@@ -61,8 +59,7 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
       backgroundColor: '#ffffff',
       fontEmbedCSS: fontCSS, // Provide font CSS directly to avoid CORS
     });
-    
-    console.log('PNG generated, triggering download...');
+
     
     // Convert data URL to blob and download
     const response = await fetch(dataUrl);
@@ -73,8 +70,7 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    
-    console.log('PNG download triggered');
+
   } catch (error) {
     console.error('Error exporting to PNG:', error);
     alert('Failed to export PNG. Check console for details.');
@@ -87,7 +83,6 @@ export const exportToPng = async (elementId: string, fileName: string = 'documen
  * @param fileName The name of the file to save.
  */
 export const exportToPdf = async (elementId: string, fileName: string = 'document') => {
-  console.log(`Starting PDF export for element: ${elementId}`);
   const element = document.getElementById(elementId);
   if (!element) {
     console.error(`Element with ID ${elementId} not found`);
@@ -96,7 +91,6 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
   }
 
   try {
-    console.log('Converting to PNG with html-to-image...');
     
     // Fetch Google Fonts CSS to avoid CORS errors
     const fontCSS = await getGoogleFontsCSS();
@@ -108,8 +102,7 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
       backgroundColor: '#ffffff',
       fontEmbedCSS: fontCSS, // Provide font CSS directly to avoid CORS
     });
-    
-    console.log('PNG generated, creating PDF...');
+
     
     // Get element dimensions
     const imgWidth = 210; // A4 width in mm
@@ -119,8 +112,7 @@ export const exportToPdf = async (elementId: string, fileName: string = 'documen
     const pdf = new jsPDF('p', 'mm', 'a4');
     pdf.addImage(dataUrl, 'PNG', 0, 0, imgWidth, imgHeight);
     pdf.save(`${fileName}.pdf`);
-    
-    console.log('PDF saved');
+
   } catch (error) {
     console.error('Error exporting to PDF:', error);
     alert('Failed to export PDF. Check console for details.');

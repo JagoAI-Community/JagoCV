@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { CvFormData } from '../types/document';
@@ -94,7 +94,6 @@ export default function CvResultView() {
         <div className="flex flex-wrap items-center gap-3">
           <button 
             onClick={() => {
-              console.log('PNG button clicked');
               exportToPng('cv-document-container', `CV_${content.fullName.replace(/\s+/g, '_')}`);
             }}
             className="px-6 py-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm font-bold border border-slate-300 dark:border-slate-700 transition-all flex items-center gap-2 group"
@@ -104,7 +103,6 @@ export default function CvResultView() {
           </button>
           <button 
             onClick={() => {
-              console.log('PDF button clicked');
               exportToPdf('cv-document-container', `CV_${content.fullName.replace(/\s+/g, '_')}`);
             }}
             className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold shadow-lg shadow-blue-500/30 transition-all flex items-center gap-2 group"
