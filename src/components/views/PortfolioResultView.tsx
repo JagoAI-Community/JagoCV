@@ -69,7 +69,7 @@ export default function PortfolioResultView() {
         <div className="flex flex-col lg:flex-row-reverse gap-8 items-start w-full">
           {/* Left Col: Document */}
           <div className="w-full lg:w-2/3 flex flex-col transition-all duration-500" id="portfolio-document-wrapper">
-          <div className="w-full min-h-[80vh] relative shadow-2xl rounded-[3rem] border-[8px] border-slate-200 dark:border-slate-800 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-500 ease-in-out bg-slate-900" id="portfolio-document-container">
+          <div className="w-full min-h-[80vh] relative shadow-2xl rounded-[3rem] border-[8px] border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-500 ease-in-out bg-slate-900" id="portfolio-document-container">
              <PortfolioViewer templateId={doc?.templateId || 'BentoGelap'} data={doc?.content} />
           </div>
           </div>
