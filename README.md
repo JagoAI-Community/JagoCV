@@ -14,7 +14,7 @@ JagoCV adalah platform SaaS (Software as a Service) yang dirancang untuk membant
 ## 🛠️ Tech Stack
 - **Frontend**: React.js, Vite, Tailwind CSS, Lucide Icons, Framer Motion.
 - **Backend**: Node.js, Express.
-- **ORM & Database**: Prisma ORM, PostgreSQL (Supabase).
+- **ORM & Database**: Prisma ORM, MySQL.
 - **AI**: Google Generative AI (Gemini).
 
 ---
@@ -36,7 +36,7 @@ Pastikan Anda sudah menginstal Node.js di komputer Anda.
 
 ### 2. Konfigurasi Environment
 Salin file `.env.example` menjadi `.env` dan isi variabel yang dibutuhkan:
-- `DATABASE_URL`: Koneksi ke PostgreSQL/Supabase.
+- `DATABASE_URL`: Koneksi ke MySQL (contoh: `mysql://root@localhost:3306/jagocv`).
 - `GEMINI_API_KEY`: API Key dari Google AI Studio.
 - `JWT_SECRET`: Kode rahasia untuk keamanan token login.
 
@@ -56,8 +56,9 @@ cd app/backend
 # Instal dependensi
 npm install
 
-# Sinkronisasi database
-npx prisma db push
+# Generate Prisma Client dan jalankan migrasi
+npx prisma generate
+npx prisma migrate dev
 
 # Jalankan server
 npm run dev

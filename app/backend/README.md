@@ -1,34 +1,51 @@
 # JagoCV Backend
 
-Backend untuk JagoCV menggunakan Node.js, Express, dan PostgreSQL (Prisma ORM).
+Backend untuk JagoCV menggunakan Node.js, Express, dan MySQL (Prisma ORM).
 
-## Persiapan
-1. Pastikan Anda sudah menginstal **PostgreSQL** di komputer Anda.
-2. Buat database baru dengan nama `jagocv_db`.
+## Setup Cepat
 
-## Instalasi
-1. Masuk ke folder backend:
-   ```bash
-   cd backend
-   ```
-2. Instal dependensi:
-   ```bash
-   npm install
-   ```
+### 1. Install Laragon
+Download dan install **Laragon** dari [https://laragon.org](https://laragon.org)
 
-## Konfigurasi Database
-1. Buka file `.env` di folder `backend`.
-2. Sesuaikan `DATABASE_URL` dengan username dan password PostgreSQL Anda:
-   `postgresql://USER:PASSWORD@localhost:5432/jagocv_db?schema=public`
+### 2. Start MySQL
+Buka Laragon dan klik **Start All**
 
-## Sinkronisasi Database
-Jalankan perintah ini untuk membuat tabel di PostgreSQL:
+### 3. Install Dependencies
+```bash
+cd app/backend
+npm install
+```
+
+### 4. Setup Database
 ```bash
 npx prisma migrate dev --name init
 ```
 
-## Menjalankan Server
+> **Note:** Jangan lupa setup file `.env` dengan `DATABASE_URL` dan variabel lainnya (JWT_SECRET, GEMINI_API_KEY)
+
+### 5. Run Server
 ```bash
 npm run dev
 ```
-Server akan berjalan di `http://localhost:5000`.
+
+Server akan berjalan di `http://localhost:5000`
+
+---
+
+## Konfigurasi .env
+
+```env
+DATABASE_URL="mysql://root@localhost:3306/jagocv"
+JWT_SECRET="your_secret_key"
+GEMINI_API_KEY="your_gemini_api_key"
+PORT=5000
+```
+
+## Troubleshooting
+
+**Error: Can't connect to MySQL**
+- Pastikan Laragon sudah running
+
+**Error: Access denied**
+- Cek username/password di `DATABASE_URL`
+- Default Laragon: `root` tanpa password
