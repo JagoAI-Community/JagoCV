@@ -1,8 +1,11 @@
-import { Github, Linkedin, Globe, MapPin, ExternalLink, Briefcase, GraduationCap, Sparkles, ChevronRight } from "lucide-react";
+import { Github, Linkedin, Globe, MapPin, ExternalLink, Briefcase, GraduationCap, Sparkles, ChevronRight, Link as LinkIcon } from "lucide-react";
 import { motion } from "motion/react";
-import "./PortfolioDeveloper.css";
+import "./DeveloperTerminal.css";
+import { PortfolioData } from "../../../../models/portfolio";
 
-export default function PortfolioDeveloper() {
+export default function PortfolioDeveloper({ data }: { data?: PortfolioData }) {
+  if (!data) return null;
+  const skillsList = data.skills ? data.skills.split(',').map(s => s.trim()).filter(s => s) : [];
   return (
     <div className="min-h-screen relative bg-[#0A0C10] text-slate-200 font-sans p-4 sm:p-10 flex flex-col selection:bg-cyan-500/30 border-t-8 sm:border-y-8 sm:border-x-8 border-[#161B22]">
       {/* Cyan Lighting Accents */}
@@ -21,8 +24,8 @@ export default function PortfolioDeveloper() {
            >
              <div className="w-32 h-32 rounded-full border-2 border-cyan-400/30 p-1.5 bg-[#161B22]">
                <img 
-                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop" 
-                 alt="John Doe, Software Developer"
+                 src={data.profileImageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&h=300&auto=format&fit=crop"} 
+                 alt={data.fullName || "Profile"}
                  className="w-full h-full rounded-full object-cover"
                />
              </div>
@@ -37,21 +40,27 @@ export default function PortfolioDeveloper() {
            >
              <div className="flex flex-col lg:flex-row lg:items-baseline justify-between mb-1 gap-2 lg:gap-0 text-center md:text-left">
                <h1 className="text-4xl font-light tracking-tight text-white flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-start">
-                 John Doe <span className="hidden sm:inline text-cyan-400 mx-2 font-thin">|</span> <span className="text-slate-400 text-2xl sm:text-4xl">Innovative Solutions Developer</span>
+                 {data.fullName || 'Nama Anda'} <span className="hidden sm:inline text-cyan-400 mx-2 font-thin">|</span> <span className="text-slate-400 text-2xl sm:text-4xl">{data.role || 'Peran Anda'} {data.accentEmoji}</span>
                </h1>
                <div className="text-xs font-mono text-cyan-500/80 tracking-widest uppercase flex items-center justify-center md:justify-start gap-1">
-                 San Francisco, CA <MapPin className="w-3 h-3" />
+                 {data.location || 'Lokasi Anda'} <MapPin className="w-3 h-3" />
                </div>
              </div>
-             <p className="text-slate-400 max-w-xl text-sm leading-relaxed mb-4 italic text-center md:text-left mx-auto md:mx-0">
-               Building precise, high-performance digital experiences with a focus on sharp aesthetics and robust system architectures.
+             <p className="text-slate-400 max-w-xl text-sm leading-relaxed mb-4 italic text-center md:text-left mx-auto md:mx-0 whitespace-pre-wrap">
+               {data.aboutMe || data.shortBio || 'Ceritakan tentang diri Anda...'}
              </p>
              
              {/* Connect With Me */}
              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-               <SocialButton icon={<Github className="w-3.5 h-3.5"/>} label="GitHub" url="github.com/johndoe" />
-               <SocialButton icon={<Linkedin className="w-3.5 h-3.5"/>} label="LinkedIn" url="linkedin.com/in/johndoe" />
-               <SocialButton icon={<Globe className="w-3.5 h-3.5"/>} label="Portfolio" url="johndoe.dev" />
+               {data.links.length > 0 ? data.links.map((link, idx) => {
+                 let Icon = <LinkIcon className="w-3.5 h-3.5" />;
+                 const lowerUrl = link.url.toLowerCase();
+                 if (lowerUrl.includes('github.com')) Icon = <Github className="w-3.5 h-3.5" />;
+                 if (lowerUrl.includes('linkedin.com')) Icon = <Linkedin className="w-3.5 h-3.5" />;
+                 return <SocialButton key={idx} icon={Icon} label={link.title} url={link.url} />;
+               }) : (
+                 <span className="text-slate-500 text-xs">Belum ada tautan.</span>
+               )}
              </div>
            </motion.div>
         </header>
@@ -60,58 +69,36 @@ export default function PortfolioDeveloper() {
           {/* Project Highlights */}
           <section className="md:col-span-12 lg:col-span-5 flex flex-col">
             <SectionHeading title="Project Highlights" />
-            <div className="space-y-4">
-              <ProjectCard 
-                title="Taskify App"
-                description="A robust task management platform focusing on workflow optimization, real-time sync, and comprehensive team analytics."
-                image="https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=400&h=400&auto=format&fit=crop"
-                link="#"
-              />
-              <ProjectCard 
-                title="Aura Dashboard"
-                description="Analytics dashboard turning complex datasets into actionable, beautiful insights with dynamic data visualization."
-                image="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=400&h=400&auto=format&fit=crop"
-                link="#"
-              />
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {data.projects.length > 0 ? data.projects.map((project, idx) => (
+                <ProjectCard 
+                  key={idx}
+                  title={project.title}
+                  description={project.description}
+                  image={project.imageUrl || ''}
+                  link={project.url || '#'}
+                />
+              )) : (
+                 <div className="text-slate-500 text-sm">Belum ada proyek.</div>
+              )}
             </div>
           </section>
 
           {/* Detailed Experience & Education */}
           <section className="md:col-span-12 lg:col-span-7 flex flex-col">
             <SectionHeading title="Experience & Education" />
-            <div className="space-y-6 flex-grow pb-8">
+            <div className="space-y-6 flex-grow pb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {data.experiences.length > 0 ? data.experiences.map((exp, idx) => (
                  <ExperienceItem 
-                   role="Senior Software Engineer"
-                   company="InnovateTech"
-                   date="2021 — PRESENT"
-                   points={[
-                     "Spearheaded the migration of a legacy monolithic application to a highly scalable microservices architecture.",
-                     "Improved rendering performance of the core user interface by 40%.",
-                     "Mentored a team of 5 junior developers, establishing modern React and Node.js best practices."
-                   ]}
-                    isEducation={false}
+                   key={idx}
+                   role={exp.role}
+                   company={exp.company}
+                   date={exp.years}
+                   description={exp.description}
                  />
-                 <ExperienceItem 
-                   role="Software Developer"
-                   company="Creative Solutions"
-                   date="2018 — 2021"
-                   points={[
-                     "Developed and maintained responsive web applications utilized by over 50,000 active users monthly.",
-                     "Architected seamless integrations with third-party apis including Stripe for payments and Twilio for notifications.",
-                     "Led front-end rebuilds ensuring WCAG compliant accessibility."
-                   ]}
-                   isEducation={false}
-                 />
-                  <ExperienceItem 
-                   role="B.S. in Computer Science"
-                   company="University of Technology"
-                   date="2014 — 2018"
-                   points={[
-                     "Graduated Summa Cum Laude, GPA: 3.95/4.0.",
-                     "Specialized in Human-Computer Interaction, Distributed Systems, and Advanced Algorithms."
-                   ]}
-                    isEducation={true}
-                 />
+              )) : (
+                 <div className="text-slate-500 text-sm pl-6">Belum ada riwayat.</div>
+              )}
             </div>
           </section>
         </div>
@@ -122,16 +109,18 @@ export default function PortfolioDeveloper() {
             <div className="flex flex-col gap-2 w-full md:w-auto items-center md:items-start text-center md:text-left">
                <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest">Main Skills</span>
                <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                 {["React.js", "Node.js", "TypeScript", "Tailwind CSS", "PostgreSQL", "Cloud Architecture"].map((skill) => (
+                 {skillsList.length > 0 ? skillsList.map((skill) => (
                    <span key={skill} className="bg-slate-800 text-slate-300 text-[10px] px-3 py-1 rounded-full border border-slate-700 font-mono">
                      {skill}
                    </span>
-                 ))}
+                 )) : (
+                   <span className="text-slate-500 text-xs">Belum ada skill.</span>
+                 )}
                </div>
             </div>
             <div className="text-center md:text-right shrink-0">
-              <p className="text-[10px] text-slate-500 uppercase tracking-tighter">Design & Code by John Doe</p>
-              <p className="text-[9px] text-slate-600 italic">Built for the modern web &copy; 2026</p>
+              <p className="text-[10px] text-slate-500 uppercase tracking-tighter">Design & Code by {data.fullName || 'Nama Anda'}</p>
+              <p className="text-[9px] text-slate-600 italic">Built for the modern web &copy; {new Date().getFullYear()}</p>
             </div>
           </div>
         </footer>
@@ -152,7 +141,7 @@ function SectionHeading({ title }: { title: string }) {
 function SocialButton({ icon, label, url }: { icon: React.ReactNode, label: string, url: string }) {
   return (
     <a 
-      href={`https://${url}`}
+      href={url.startsWith('http') ? url : `https://${url}`}
       target="_blank"
       rel="noopener noreferrer"
       className="px-4 py-1.5 border border-slate-700 hover:border-cyan-400/50 bg-[#161B22] rounded flex items-center gap-2 text-xs font-medium transition-colors"
@@ -168,38 +157,42 @@ function SocialButton({ icon, label, url }: { icon: React.ReactNode, label: stri
 function ProjectCard({ title, description, image, link }: { title: string, description: string, image: string, link: string }) {
   return (
     <div className="flex gap-4 p-4 rounded-lg bg-[#111419] border border-slate-800 hover:border-slate-700 transition-all group items-center">
-       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#161B22] rounded flex-shrink-0 overflow-hidden relative border border-slate-800">
-         <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-60 mix-blend-luminosity" />
+       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#161B22] rounded flex-shrink-0 overflow-hidden relative border border-slate-800 flex items-center justify-center">
+         {image ? (
+           <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-60 mix-blend-luminosity" />
+         ) : (
+           <span className="text-cyan-500 font-mono text-xl opacity-50">{'</>'}</span>
+         )}
        </div>
        <div className="flex flex-col justify-center">
          <h4 className="text-white font-semibold text-sm group-hover:text-cyan-400 transition-colors">{title}</h4>
          <p className="text-xs text-slate-500 mt-1 mb-2 line-clamp-2">{description}</p>
-         <a href={link} className="text-[10px] text-cyan-500 underline underline-offset-4 uppercase font-bold tracking-tighter inline-flex items-center gap-1 w-fit">
-           View Project <ExternalLink className="w-3 h-3" />
-         </a>
+         {link && (
+           <a href={link} target="_blank" rel="noreferrer" className="text-[10px] text-cyan-500 underline underline-offset-4 uppercase font-bold tracking-tighter inline-flex items-center gap-1 w-fit">
+             View Project <ExternalLink className="w-3 h-3" />
+           </a>
+         )}
        </div>
     </div>
   );
 }
 
-function ExperienceItem({ role, company, date, points, isEducation }: { role: string, company: string, date: string, points: string[], isEducation: boolean }) {
+function ExperienceItem({ role, company, date, description }: { role: string, company: string, date: string, description: string }) {
   return (
     <div className="relative pl-6 border-l border-slate-800">
-      <div className={`absolute -left-[5px] top-1 w-2 h-2 rounded-full ${isEducation ? 'bg-slate-700' : 'bg-cyan-500'}`}></div>
+      <div className={`absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-cyan-500`}></div>
       <div className="flex flex-col sm:flex-row justify-between sm:items-start mb-1 gap-1 sm:gap-0">
         <h4 className="text-sm font-bold text-white flex items-center gap-2">
           {role}
         </h4>
-        <span className={`text-[10px] font-mono text-slate-500 ${!isEducation ? 'bg-slate-900 px-2 py-0.5 rounded border border-slate-800' : ''} w-fit`}>
+        <span className={`text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 w-fit`}>
           {date}
         </span>
       </div>
       <p className="text-xs text-cyan-500/80 mb-2">{company}</p>
-      <ul className="text-[11px] text-slate-400 space-y-1">
-        {points.map((point, index) => (
-           <li key={index}>• {point}</li>
-        ))}
-      </ul>
+      <div className="text-[11px] text-slate-400 space-y-1 whitespace-pre-wrap">
+        {description}
+      </div>
     </div>
   );
 }

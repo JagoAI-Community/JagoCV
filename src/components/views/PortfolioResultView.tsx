@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../../services/api';
 import { exportToPdf, exportToPng } from '../../utils/export';
+import PortfolioViewer from '../PortfolioViewer';
 
 export default function PortfolioResultView() {
   const { idOrSlug } = useParams();
@@ -68,71 +69,8 @@ export default function PortfolioResultView() {
         <div className="flex flex-col lg:flex-row-reverse gap-8 items-start w-full">
           {/* Left Col: Document */}
           <div className="w-full lg:w-2/3 flex flex-col transition-all duration-500" id="portfolio-document-wrapper">
-          <div className="max-w-[400px] w-full mx-auto min-h-[80vh] relative shadow-2xl rounded-[3rem] border-[8px] border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-500 ease-in-out" id="portfolio-document-container">
-          
-          {/* Mock Mobile Viewport Background */}
-          <div className="absolute inset-0 bg-white dark:bg-[#0F172A] flex flex-col justify-between" style={{ backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.15) 0%, transparent 70%)' }}>
-             
-             {/* Scrollable Content */}
-             <div className="flex-1 overflow-y-auto px-6 py-12 hide-scrollbar">
-                <div className="w-full max-w-lg mx-auto">
-                     <section className="mb-8 text-center relative group custom-resume-section p-4 -m-4 rounded-2xl border border-transparent hover:border-cyan-800 hover:bg-cyan-900/10 transition-all cursor-pointer">
-                     <button className="btn-ask-ai absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-cyan-900/50 border border-cyan-100 text-cyan-700 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-cyan-50 z-20 hover:scale-105">
-                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                       Ubah Bio
-                     </button>
-                     <div className="w-24 h-24 mx-auto rounded-full bg-white dark:bg-slate-800 border-[3px] border-cyan-500/50 mb-4 flex items-center justify-center text-3xl font-bold text-slate-900 dark:text-white shadow-[0_0_20px_rgba(6,182,212,0.3)]">
-                        SU
-                     </div>
-                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-2">
-                        Salman Uyat <span className="text-cyan-400">🚀</span>
-                     </h1>
-                     <p className="text-sm font-medium text-cyan-400 mb-2">Pengembang Frontend</p>
-                     <p className="text-xs text-slate-500 dark:text-slate-400">Membangun aplikasi web interaktif dan mengeksplorasi utilitas AI untuk memberikan pengalaman digital yang mulus.</p>
-                   </section>
-
-                   <section className="space-y-4 relative group custom-resume-section p-4 -m-4 rounded-2xl border border-transparent hover:border-cyan-800 hover:bg-cyan-900/10 transition-all cursor-pointer">
-                     <button className="btn-ask-ai absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-all bg-white shadow-xl shadow-cyan-900/50 border border-cyan-100 text-cyan-700 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold flex items-center gap-1 hover:bg-cyan-50 z-20 hover:scale-105">
-                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                       Tambah/Edit Tautan
-                     </button>
-                     
-                     <a href="#" className="block w-full py-4 text-center bg-cyan-900/20 hover:bg-cyan-900/40 border border-cyan-500/30 rounded-2xl text-cyan-100 text-sm font-semibold transition-all">
-                        Lihat Resume Saya
-                     </a>
-                     
-                     <a href="#" className="block w-full py-4 text-center bg-white/5 hover:bg-white/10 border border-slate-800 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-slate-200 text-sm font-semibold transition-all">
-                        Cek GitHub Saya 🔥
-                     </a>
-                     
-                     <a href="#" className="block w-full py-4 text-center bg-white/5 hover:bg-white/10 border border-slate-800 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-slate-200 text-sm font-semibold transition-all">
-                        Terhubung di LinkedIn
-                     </a>
-
-                     {/* Mock Project Bento Box */}
-                     <div className="grid grid-cols-2 gap-4 pt-4" id="portfolio-bento-grid">
-                        <a href="#" className="block aspect-square p-4 bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/20 hover:border-indigo-500/50 rounded-2xl flex flex-col justify-end transition-all relative overflow-hidden">
-                           <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/project1/300/300')] opacity-20 mix-blend-overlay"></div>
-                           <h3 className="text-sm font-bold text-slate-900 dark:text-white relative z-10">Taskify AI</h3>
-                           <p className="text-[10px] text-indigo-300 relative z-10 break-words">React + Node Tool</p>
-                        </a>
-                        <a href="#" className="block aspect-square p-4 bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/20 hover:border-blue-500/50 rounded-2xl flex flex-col justify-end transition-all relative overflow-hidden">
-                           <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/project2/300/300')] opacity-20 mix-blend-overlay"></div>
-                           <h3 className="text-sm font-bold text-slate-900 dark:text-white relative z-10">AI Fetcher</h3>
-                           <p className="text-[10px] text-blue-300 relative z-10 break-words">Open Source Repo</p>
-                        </a>
-                     </div>
-
-                   </section>
-                </div>
-             </div>
-
-             {/* Mock Mobile Footer / Watermark */}
-              <div className="text-center py-4 text-[10px] text-slate-900 font-medium">
-                Dibuat dengan jagocv.link
-             </div>
-
-          </div>
+          <div className="w-full min-h-[80vh] relative shadow-2xl rounded-[3rem] border-[8px] border-slate-200 dark:border-slate-800 overflow-y-auto overflow-x-hidden hide-scrollbar transition-all duration-500 ease-in-out bg-slate-900" id="portfolio-document-container">
+             <PortfolioViewer templateId={doc?.templateId || 'BentoGelap'} data={doc?.content} />
           </div>
           </div>
         

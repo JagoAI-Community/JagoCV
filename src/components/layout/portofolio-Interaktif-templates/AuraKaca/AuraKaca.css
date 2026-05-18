@@ -1,3 +1,4 @@
+@reference "../../../../index.css";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
@@ -6,6 +7,6 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #020617; /* Slate 950 */
+  background-color: #0B1221; /* Dark Navy/Teal */
 }
 
