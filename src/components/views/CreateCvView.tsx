@@ -21,8 +21,12 @@ export default function CreateCvView() {
   const [selectedTemplateId, setSelectedTemplateId] = useState('AtsCompact');
   const [selectedFont, setSelectedFont] = useState('Inter');
   const [showExitModal, setShowExitModal] = useState(false);
+  const [initialStateStr, setInitialStateStr] = useState('');
+  const [doc, setDoc] = useState<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
+
+
 
   useEffect(() => {
     const updateScale = () => {
@@ -62,6 +66,25 @@ export default function CreateCvView() {
     skills: '',
   });
 
+  useEffect(() => {
+    if (initialStateStr === '') {
+      if (id && doc) {
+        setInitialStateStr(JSON.stringify({ data: formData, templateId: selectedTemplateId, fontFamily: selectedFont }));
+      } else if (!id && formData.fullName !== '') {
+        setInitialStateStr(JSON.stringify({ data: formData, templateId: selectedTemplateId, fontFamily: selectedFont }));
+      }
+    }
+  }, [id, doc, formData, selectedTemplateId, selectedFont, initialStateStr]);
+
+  const handleBack = () => {
+    const currentState = JSON.stringify({ data: formData, templateId: selectedTemplateId, fontFamily: selectedFont });
+    if (currentState === initialStateStr || initialStateStr === '') {
+      navigate('/dashboard');
+    } else {
+      setShowExitModal(true);
+    }
+  };
+
   // Load user profile data (only for new document)
   useEffect(() => {
     if (user && !id) {
@@ -80,7 +103,7 @@ export default function CreateCvView() {
     }
   }, [user, id]);
 
-  const [doc, setDoc] = useState<any>(null);
+
 
   // Load existing document data if editing
   useEffect(() => {
@@ -185,10 +208,9 @@ export default function CreateCvView() {
         </div>
       </div>
 
-      {/* Back Link */}
       <button 
         type="button"
-        onClick={() => setShowExitModal(true)} 
+        onClick={handleBack} 
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors mb-6 group w-fit cursor-pointer"
       >
         <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>

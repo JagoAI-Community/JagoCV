@@ -83,6 +83,26 @@ export default function DesignResumeView() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [initialStateStr, setInitialStateStr] = useState('');
+
+  useEffect(() => {
+    if (initialStateStr === '') {
+      if (id && doc) {
+        setInitialStateStr(JSON.stringify({ data: resumeData, templateId, fontFamily }));
+      } else if (!id && resumeData.profile.name !== '') {
+        setInitialStateStr(JSON.stringify({ data: resumeData, templateId, fontFamily }));
+      }
+    }
+  }, [id, doc, resumeData, templateId, fontFamily, initialStateStr]);
+
+  const handleBack = () => {
+    const currentState = JSON.stringify({ data: resumeData, templateId, fontFamily });
+    if (currentState === initialStateStr || initialStateStr === '') {
+      navigate('/dashboard');
+    } else {
+      setShowExitModal(true);
+    }
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
@@ -479,7 +499,21 @@ export default function DesignResumeView() {
   return (
     <div className="animate-[fadeIn_0.5s_ease_forwards]">
       
-      <button onClick={() => setShowExitModal(true)} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white mb-6 transition-colors font-medium text-sm w-fit px-3 py-1.5 rounded-lg -ml-3">
+      {/* Premium Switch Navigation */}
+      {id && (
+        <div className="flex justify-center mb-12 relative z-50">
+          <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-2xl flex items-center gap-1 border border-slate-300 dark:border-slate-700 shadow-xl backdrop-blur-md">
+            <div className="px-8 py-2.5 rounded-xl text-sm font-bold bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-lg border border-slate-200 dark:border-indigo-500/30 transition-all">
+              Editor Resume
+            </div>
+            <Link to={`/resume/result/${id}`} className="px-8 py-2.5 rounded-xl text-sm font-bold transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-white/50 dark:hover:bg-white/5">
+              Hasil Akhir
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <button onClick={handleBack} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-white/5 dark:hover:text-white mb-6 transition-colors font-medium text-sm w-fit px-3 py-1.5 rounded-lg -ml-3">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         Kembali ke Dasbor
       </button>
